@@ -13,7 +13,7 @@ includes:
 
 Understand open-source projects with AI-powered documentation analysis.
 
-@deepwiki:context/deepwiki-awareness.md
+<!-- Awareness context is injected by behaviors/deepwiki.yaml -->
 
 ---
 
