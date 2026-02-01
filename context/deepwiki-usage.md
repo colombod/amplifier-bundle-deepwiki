@@ -3,6 +3,43 @@
 This document provides comprehensive guidance for effectively using DeepWiki 
 to understand open-source projects.
 
+---
+
+## Critical Insight: Progressive Discovery
+
+**DeepWiki operations are content-intensive.** The wiki content for a single 
+repository can exceed 400,000 characters. Complex AI-powered questions can 
+take 30+ seconds to process.
+
+**The optimal strategy is progressive discovery:**
+
+```
+Start Simple ──▶ Build Understanding ──▶ Go Deep
+   │                    │                   │
+   │                    │                   │
+   ▼                    ▼                   ▼
+Quick question      Structure scan      Full content
+(fastest)           (fast)              (slowest)
+```
+
+### The Questions-First Approach
+
+**Start with `ask_question`** - not structure or content reads:
+
+| Approach | Speed | When to Use |
+|----------|-------|-------------|
+| `ask_question` (simple) | Fast (5-15s) | First contact, specific queries |
+| `read_wiki_structure` | Fast (2-5s) | Planning deep dives |
+| `ask_question` (complex) | Slow (30-60s) | Synthesis across topics |
+| `read_wiki_contents` | Variable | Need exhaustive detail |
+
+**Why questions first?**
+- DeepWiki's AI synthesizes answers from the full codebase
+- Faster than reading and parsing 400k chars of wiki content
+- Gets you targeted answers without information overload
+
+---
+
 ## Repository Format
 
 DeepWiki uses GitHub repository identifiers in `owner/repo` format:
@@ -13,41 +50,76 @@ DeepWiki uses GitHub repository identifiers in `owner/repo` format:
 | `tiangolo/fastapi` | FastAPI framework |
 | `microsoft/vscode` | VS Code editor |
 | `langchain-ai/langchain` | LangChain framework |
-| `pallets/flask` | Flask framework |
+| `dotnet/interactive` | .NET Interactive |
 
-**Important:** Only public GitHub repositories are accessible. Private repos 
-require a Devin.ai account.
+**Important:** Only public GitHub repositories are accessible.
 
 ---
 
 ## Tool-Specific Guidance
 
-### read_wiki_structure
+### ask_question (START HERE)
 
-**Purpose:** Get the hierarchical outline of available documentation for a repository.
+**Purpose:** Ask natural language questions and get AI-powered, context-grounded answers.
 
-**When to use:**
-- Starting any exploration of a new repository
-- Planning which sections to read in detail
-- Understanding how documentation is organized
+**This is your primary tool.** DeepWiki's AI has already processed the entire 
+codebase - leverage that instead of reading raw content.
 
 **Best practices:**
-- Always start here before reading contents
-- Look for sections matching the user's interests
-- Note the hierarchy - parent sections provide context
+- **Break down complex questions** - Multiple simple questions > one complex question
+- Simple questions: 5-15 seconds
+- Complex/synthesis questions: 30-60+ seconds (may timeout)
+- Be specific about what aspect you need
 
-**Example response structure:**
+**Progressive question strategy:**
+
+```
+1. "What is [library] and what problem does it solve?"     ← Start here
+2. "What are the main components of [library]?"            ← Build context  
+3. "How does [specific component] work?"                   ← Go deeper
+4. "How do I extend [specific feature]?"                   ← Practical goal
+```
+
+**Effective question patterns:**
+
+| Pattern | Example |
+|---------|---------|
+| Overview | "What are the main components of the FastAPI framework?" |
+| Specific | "How does React's useState hook work internally?" |
+| Practical | "How do I add a custom middleware to Express?" |
+| Comparison | "How does Vue's reactivity differ from React's?" |
+
+**Avoid (causes timeouts):**
+- "Tell me everything about React's architecture, internals, and extension points"
+- Multiple unrelated questions in one request
+- Vague questions: "How does it work?"
+
+---
+
+### read_wiki_structure
+
+**Purpose:** Get the hierarchical outline of available documentation.
+
+**When to use:**
+- Planning a systematic deep dive
+- Need to know what topics exist
+- Looking for specific sections to explore
+
+**Best practices:**
+- Fast operation (2-5 seconds)
+- Use to identify relevant sections for follow-up questions
+- Helps you ask better targeted questions
+
+**Example response:**
 ```
 - Overview
-  - Architecture
-  - Key Concepts
-- Getting Started
-- Core Components
-  - Component A
-  - Component B
-- Advanced Topics
-  - Extension Points
-  - Internals
+- Core Architecture
+  - Kernel System
+  - Command and Event System
+- Features
+  - Magic Commands
+  - Variable Sharing
+- API Reference
 ```
 
 ---
@@ -59,85 +131,83 @@ require a Devin.ai account.
 **Parameters:** Only `repoName` (owner/repo format). Does NOT support page filtering.
 
 **When to use:**
-- After identifying the repository you want to explore
-- Need comprehensive documentation content
-- Looking for code examples and implementation details
+- Need exhaustive, comprehensive content
+- Questions aren't giving enough detail
+- Want to search for specific terms across all docs
 
-**Best practices:**
+**Characteristics:**
 - Returns ALL wiki pages concatenated (can be 400k+ chars)
-- Content is automatically truncated to ~50k chars by the tool
-- Pages are separated by `# Page: <Page Name>` headers
-- Each page includes "Relevant source files" sections
-
-**Tips:**
-- Content includes Mermaid diagrams, tables, and source references
-- Look for `[src/path/file.cs:line-range]()` references for code locations
-- If you need specific sections, search within the returned content
-
-**Note:** This tool returns the entire wiki, not individual pages. Use 
-`read_wiki_structure` first to understand what's available.
-
----
-
-### ask_question
-
-**Purpose:** Ask natural language questions and get AI-powered, context-grounded answers.
-
-**When to use:**
-- Specific "how" or "why" questions
-- When you need synthesis across multiple topics
-- Quick answers without reading full documentation
+- Content is automatically truncated to ~50k chars
+- Pages separated by `# Page: <Page Name>` headers
+- Includes Mermaid diagrams, tables, source references
 
 **Best practices:**
-- Be specific about what you want to understand
-- Include context about your goal
-- Good for clarifying questions after reading docs
-
-**Effective question patterns:**
-
-| Pattern | Example |
-|---------|---------|
-| Implementation | "How does React implement the virtual DOM diffing algorithm?" |
-| Design decisions | "Why does FastAPI use Pydantic for data validation?" |
-| Extension | "What's the recommended way to add a custom middleware in Express?" |
-| Comparison | "How does Vue's reactivity system differ from React's?" |
-| Architecture | "What's the overall architecture of the LangChain framework?" |
-
-**Avoid:**
-- Overly broad questions: "Tell me everything about React"
-- Vague questions: "How does it work?"
-- Multiple unrelated questions in one
+- Use AFTER questions have narrowed your focus
+- Search within returned content for specific terms
+- Look for `[src/path/file.cs:line-range]()` references
 
 ---
 
 ## Exploration Strategies
 
-### Understanding Architecture (Deep Dive)
+### Progressive Discovery (Recommended)
 
-1. **Get structure** → `read_wiki_structure`
-2. **Read overview** → `read_wiki_contents` on "Overview" or "Introduction"
-3. **Read architecture** → `read_wiki_contents` on "Architecture" or "Design"
-4. **Explore components** → Read individual component docs
-5. **Clarify specifics** → `ask_question` for remaining questions
+**For any new project exploration:**
 
-### Finding Extension Points (Practical Goal)
+```
+Phase 1: Quick Understanding (2-3 questions)
+├─ "What is [repo] and what problem does it solve?"
+├─ "What are the main architectural components?"
+└─ "How do I typically use/extend it?"
 
-1. **Get structure** → Look for "Extensions", "Plugins", "Customization"
-2. **Read extension docs** → `read_wiki_contents` on relevant sections
-3. **Ask specific question** → "How do I create a custom X in this library?"
-4. **Read examples** → Look for "Examples" sections
+Phase 2: Targeted Deep Dive (if needed)
+├─ Get structure to see available topics
+├─ Ask specific questions about relevant sections
+└─ Read content only for sections needing exhaustive detail
+
+Phase 3: Practical Application
+├─ "How do I implement [specific goal]?"
+├─ "What are the extension points for [feature]?"
+└─ "Show me the pattern for [use case]"
+```
+
+### Understanding Architecture
+
+1. **Quick overview** → `ask_question`: "What's the architecture of [repo]?"
+2. **Identify components** → `ask_question`: "What are the main modules?"
+3. **Deep dive** → `ask_question`: "How does [specific component] work?"
+4. **Verify** → `read_wiki_structure` to see if you missed anything
+
+### Finding Extension Points
+
+1. **Direct question** → "How do I extend [library] to add [feature]?"
+2. **Follow up** → "What interfaces/protocols do I need to implement?"
+3. **Examples** → "Show me the pattern for creating a custom [thing]"
+4. **Structure check** → Look for "Extensions", "Plugins", "API" sections
 
 ### Quick Understanding (Time-Limited)
 
-1. **Ask broad question** → "What is [library] and how does it work?"
-2. **Follow up** → Ask about specific aspects that matter
-3. **Verify understanding** → Get structure and spot-check key sections
+1. **Single question** → "What is [library] and how does it work?"
+2. **Follow up only if needed** → Ask about the specific aspect that matters
+3. Done - don't over-explore if you have what you need
 
-### Debugging Integration Issues
+---
 
-1. **Ask specific question** → "Why might [specific error/behavior] occur?"
-2. **Read internals** → `read_wiki_contents` on relevant component
-3. **Check edge cases** → Ask about common pitfalls
+## Handling Timeouts
+
+Complex questions may timeout. When this happens:
+
+1. **Break down the question** into simpler parts
+2. **Ask incrementally** - build context through multiple questions
+3. **Be more specific** - narrow the scope
+
+**Instead of:**
+> "Explain the complete command and event system architecture"
+
+**Try:**
+> 1. "What command types exist in the system?"
+> 2. "What event types are emitted?"  
+> 3. "How does command routing work?"
 
 ---
 
@@ -145,11 +215,11 @@ require a Devin.ai account.
 
 | Pitfall | Solution |
 |---------|----------|
-| Skipping structure exploration | Always start with `read_wiki_structure` |
-| Asking overly broad questions | Be specific about what aspect you need |
-| Reading random sections | Use structure to identify most relevant docs |
-| Missing context | Read overview/architecture before diving deep |
-| Single-source answers | Use multiple sections + ask_question for synthesis |
+| Starting with read_wiki_contents | Start with questions instead |
+| Asking overly complex questions | Break into progressive simple questions |
+| Waiting for timeouts | If >30s, break down the question |
+| Reading everything | Let questions guide what you need |
+| Missing the big picture | Always start with overview question |
 
 ---
 
@@ -159,7 +229,6 @@ Before returning to the user, ensure your response:
 
 - [ ] Directly answers their question
 - [ ] Uses the repository's terminology
-- [ ] Cites specific documentation sections
+- [ ] Was obtained efficiently (questions before content reads)
 - [ ] Includes practical guidance they can act on
-- [ ] Suggests related topics for further exploration
-- [ ] Is comprehensive enough to be useful
+- [ ] Suggests next steps if they want to go deeper
