@@ -54,22 +54,28 @@ require a Devin.ai account.
 
 ### read_wiki_contents
 
-**Purpose:** Read the full content of specific documentation sections.
+**Purpose:** Read the full wiki content for a repository.
+
+**Parameters:** Only `repoName` (owner/repo format). Does NOT support page filtering.
 
 **When to use:**
-- After identifying relevant sections from structure
-- Need detailed information about specific topics
+- After identifying the repository you want to explore
+- Need comprehensive documentation content
 - Looking for code examples and implementation details
 
 **Best practices:**
-- Read overview/architecture sections first for context
-- Request specific section paths from the structure
-- Can read multiple related sections to build understanding
+- Returns ALL wiki pages concatenated (can be 400k+ chars)
+- Content is automatically truncated to ~50k chars by the tool
+- Pages are separated by `# Page: <Page Name>` headers
+- Each page includes "Relevant source files" sections
 
 **Tips:**
-- If content references other sections, consider reading those too
-- Code examples in documentation are often authoritative
-- "Internals" or "Architecture" sections are gold for understanding how things work
+- Content includes Mermaid diagrams, tables, and source references
+- Look for `[src/path/file.cs:line-range]()` references for code locations
+- If you need specific sections, search within the returned content
+
+**Note:** This tool returns the entire wiki, not individual pages. Use 
+`read_wiki_structure` first to understand what's available.
 
 ---
 
