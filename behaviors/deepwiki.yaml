@@ -1,0 +1,24 @@
+bundle:
+  name: deepwiki-behavior
+  version: 1.0.0
+  description: DeepWiki MCP integration for understanding open-source projects
+
+# MCP Server Configuration via tool-mcp module
+tools:
+  - module: tool-mcp
+    source: git+https://github.com/microsoft/amplifier-module-tool-mcp@main
+    config:
+      servers:
+        deepwiki:
+          type: streamable-http
+          url: https://mcp.deepwiki.com/mcp
+
+# Context-sink agent for heavy documentation work
+agents:
+  include:
+    - deepwiki:deepwiki-expert
+
+# Thin awareness injected into root sessions
+context:
+  include:
+    - deepwiki:context/deepwiki-awareness.md
