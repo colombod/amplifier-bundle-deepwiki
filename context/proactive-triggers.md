@@ -219,6 +219,48 @@ Before implementing with any external library/SDK, verify:
 
 ---
 
+## Version Mismatch Awareness
+
+**CRITICAL: DeepWiki may be out of sync with installed package versions.**
+
+**Why this matters:**
+- DeepWiki indexes repositories at specific points in time
+- Fast-moving projects diverge quickly from indexed state
+- Outdated information leads to import errors, signature mismatches, missing features
+
+**Recognize version mismatches:**
+- Import/module not found errors
+- Method signature mismatches (unexpected parameters)
+- Deprecation warnings for APIs DeepWiki recommends
+- User mentions features DeepWiki doesn't show
+
+**When version mismatch suspected:**
+
+1. **Ask DeepWiki:** "What version is this documentation for?"
+2. **Cross-reference:** Use `web_fetch` for current official docs
+3. **Use perplexity_research:** For version-specific questions
+4. **Combine sources:** DeepWiki (architecture) + official docs (current API)
+
+**Fallback strategy matrix:**
+```
+Architecture/Design     → DeepWiki (PRIMARY)
+Current API docs        → web_fetch official docs (PRIMARY)
+Breaking changes        → web_search + perplexity_research
+Latest features         → web_fetch + web_search
+Version-specific bugs   → perplexity_research
+```
+
+**Communication pattern:**
+When mismatch detected, report to user:
+- What DeepWiki showed vs reality
+- Likely version difference
+- Fallback sources used
+- Recommendation to verify with official docs
+
+See `context/version-mismatch-handling.md` for complete strategy.
+
+---
+
 ## Summary: The New Default
 
 **Old default:**
@@ -226,15 +268,16 @@ Before implementing with any external library/SDK, verify:
 Implement → Error → Debug → Research → Fix
 ```
 
-**New default:**
+**New default with version awareness:**
 ```
-Research (deepwiki) → Understand → Implement correctly
+Research (deepwiki) → Validate version → Cross-reference if needed → Implement correctly
 ```
 
 **Trigger checklist:**
 - GitHub URL? → deepwiki
 - "How does X work?" (OSS) → deepwiki
-- External SDK/library? → deepwiki BEFORE coding
+- External SDK/library? → deepwiki BEFORE coding + validate version
 - General web info? → web_search
+- Version mismatch suspected? → deepwiki + web_fetch + perplexity_research
 
 **Remember:** You're reading this file in your context RIGHT NOW. These patterns should guide your behavior automatically.

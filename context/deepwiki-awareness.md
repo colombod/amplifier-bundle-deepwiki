@@ -82,6 +82,30 @@ General web info? ──YES──▶ Use web_search (broader context)
 | `mcp_deepwiki_read_wiki_structure` | Fast | Get documentation outline |
 | `mcp_deepwiki_read_wiki_contents` | Slow | Full wiki (truncated to 50k chars) |
 
+## ⚠️ Critical: Version Mismatch Awareness
+
+**DeepWiki indexes repositories at specific points in time.** It may not reflect the latest package versions installed in your environment.
+
+**Symptoms of version mismatch:**
+- Import/module errors (can't find what DeepWiki shows)
+- Method signature mismatches (parameters don't match)
+- Missing features (user mentions features DeepWiki doesn't show)
+- Deprecation warnings for APIs DeepWiki recommends
+
+**When you suspect version mismatch:**
+
+1. **Ask DeepWiki about version:** "What version is this documentation for?"
+2. **Cross-reference with official docs:** Use `web_fetch` on official documentation
+3. **Use perplexity_research:** For version-specific questions
+4. **Validate before implementing:** Check APIs match reality
+
+**Fallback strategy:**
+```
+DeepWiki (architecture/patterns) + web_fetch (current API docs) = Accurate implementation
+```
+
+See `@deepwiki:context/version-mismatch-handling.md` (loaded in deepwiki-expert agent) for complete handling strategy.
+
 ## Quick Usage Pattern
 
 For any repository question, use this progressive approach:

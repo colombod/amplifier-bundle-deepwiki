@@ -17,6 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Real failure examples from session history (Session 89aff774) demonstrating the cost of not using DeepWiki proactively
 - Additional usage examples showing proactive delegation patterns
 - Cost-benefit analysis showing 120-240x time savings from proactive research
+- **Version mismatch awareness system** addressing DeepWiki's potential staleness:
+  - New `context/version-mismatch-handling.md` with comprehensive fallback strategies
+  - Symptom recognition patterns (import errors, signature mismatches, missing features)
+  - Validation workflow for critical implementations
+  - Fallback strategy matrix (when to use DeepWiki vs web_fetch vs perplexity_research)
+  - Official documentation URL patterns for common sources
+  - Version-aware communication patterns for reporting mismatches
 
 ### Changed
 - **Enhanced agent description** with critical urgency markers (🚨)
@@ -25,11 +32,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated `deepwiki-awareness.md` with automatic trigger checklist and decision tree
 - Moved from reactive ("when users ask") to proactive ("use immediately when you see") language
 - Added missed opportunity analysis from 10+ sessions where DeepWiki should have been used
+- **Enhanced agent with version mismatch section** including:
+  - Symptoms recognition
+  - Cross-reference workflow
+  - Fallback strategy when mismatch detected
+  - Example scenario showing mismatch detection and recovery
+- **Updated proactive-triggers.md** with version awareness integration
+- **Agent now loads version-mismatch-handling.md** for complete strategy reference
 
 ### Context
-This release addresses findings from session analysis showing DeepWiki was only used in 4.3% of sessions where it would have been valuable. The primary issue was defaulting to `web_search` instead of proactively using DeepWiki for GitHub repositories and library internals.
+This release addresses two critical findings from session analysis:
 
-**Key insight:** Session 89aff774 showed user had to explicitly prompt "remember to use deepwiki for understanding API usage" - this prevented API implementation errors. This release makes that proactive behavior the default.
+1. **Underuse:** DeepWiki was only used in 4.3% of sessions where it would have been valuable. The primary issue was defaulting to `web_search` instead of proactively using DeepWiki for GitHub repositories and library internals.
+
+2. **Version staleness:** DeepWiki indexes repositories at specific points in time and may not reflect the latest package versions installed in environments, leading to import errors, API mismatches, and implementation issues.
+
+**Key insight from Session 89aff774:** User had to explicitly prompt "remember to use deepwiki for understanding API usage" - this prevented API implementation errors. This release makes that proactive behavior the default WHILE adding awareness that DeepWiki should be combined with current official docs for production implementations.
 
 ## [1.0.0] - Initial Release
 
