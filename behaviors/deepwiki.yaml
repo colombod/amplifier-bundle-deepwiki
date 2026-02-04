@@ -22,4 +22,3 @@ agents:
 context:
   include:
     - deepwiki:context/deepwiki-awareness.md
-    - deepwiki:context/proactive-triggers.md

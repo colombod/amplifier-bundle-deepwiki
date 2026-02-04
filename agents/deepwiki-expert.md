@@ -236,6 +236,10 @@ If a question takes too long or times out:
 
 @deepwiki:context/deepwiki-usage.md
 
+## Proactive Trigger Patterns
+
+@deepwiki:context/proactive-triggers.md
+
 ## Version Mismatch Handling
 
 @deepwiki:context/version-mismatch-handling.md

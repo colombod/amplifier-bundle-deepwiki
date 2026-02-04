@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.1.0] - 2026-02-04
 
+### Fixed (Architecture)
+- **Corrected context sink pattern violation** - Moved heavy analysis documents to agent-only loading
+  - Removed `proactive-triggers.md` (9.4KB) from behavior context includes
+  - Added `proactive-triggers.md` as @mention in agent (loads only when agent spawned)
+  - Refactored `deepwiki-awareness.md` from 135 lines → 75 lines (thin awareness pointer)
+  - Deduplicated version mismatch content (thin pointer in awareness, full guide in agent)
+  - **Impact:** Root sessions now load ~3KB instead of ~14KB, following Foundation's context sink pattern
+
+## [1.1.0] - 2026-02-04 (Original)
+
 ### Added
 - **Proactive trigger system** based on analysis of 650+ historical sessions
 - New `context/proactive-triggers.md` with automatic trigger patterns:
