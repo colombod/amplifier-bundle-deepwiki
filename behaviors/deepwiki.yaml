@@ -1,6 +1,6 @@
 bundle:
   name: deepwiki-behavior
-  version: 1.0.0
+  version: 1.1.0
   description: DeepWiki MCP integration for understanding open-source projects
 
 # MCP Server Configuration via tool-mcp module
