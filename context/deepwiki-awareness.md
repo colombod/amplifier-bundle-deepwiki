@@ -2,26 +2,77 @@
 
 You have access to **DeepWiki** for understanding open-source projects on GitHub.
 
-## Critical: Progressive Discovery Approach
+## 🚨 CRITICAL: Use Proactively, Not Reactively
 
-**DeepWiki operations are content-intensive** - wiki content can exceed 400k characters.
-Complex questions can timeout. Use progressive discovery:
+**Session analysis shows deepwiki was only used in 4.3% of sessions where it would have been valuable.**
+The default pattern is web_search → this is WRONG for GitHub repositories and library internals.
+
+**Real failure from Session 89aff774:**
+- User implementing Azure AI Inference SDK
+- AI guessed at API structure → incorrect assumptions
+- User had to interrupt: "remember to use deepwiki for understanding API usage"
+- After deepwiki: Correct imports, signatures, structures → prevented implementation errors
+
+**Cost-benefit:** 30 seconds of deepwiki research prevents hours of debugging wrong APIs.
+
+## Automatic Triggers - Use IMMEDIATELY When You See
+
+### 🔴 Strong Triggers (ALWAYS delegate to deepwiki:deepwiki-expert)
+
+1. **GitHub URLs in ANY format:**
+   - `github.com/owner/repo`
+   - `https://github.com/microsoft/amplifier`
+   - Repository references in conversation
+   
+2. **"How does [library] work"** questions:
+   - "How does Amplifier's module loading work?"
+   - "What's the architecture of FastAPI?"
+   - "How does React reconciliation work?"
+
+3. **Library internals questions:**
+   - Architecture, design patterns, internal APIs
+   - Module structure, component hierarchy
+   - Implementation details
+
+4. **API integration tasks:**
+   - Implementing with external packages/SDKs
+   - "How do I use [library] for [task]?"
+   - Before writing code that calls external APIs
+
+5. **Open-source project references:**
+   - React, Vue, Django, FastAPI, Amplifier mentions
+   - Any third-party framework or tool
+   - Developer tools and libraries
+
+### Decision Tree
 
 ```
-Questions First ──▶ Build Understanding ──▶ Deep Dive (if needed)
+See GitHub URL? ──YES──▶ Delegate to deepwiki:deepwiki-expert
+      │
+      NO
+      ↓
+"How does X work?" ──YES──▶ Delegate to deepwiki:deepwiki-expert
+      │
+      NO
+      ↓
+Implementing with ──YES──▶ Delegate to deepwiki:deepwiki-expert FIRST
+external library?
+      │
+      NO
+      ↓
+General web info? ──YES──▶ Use web_search (broader context)
 ```
-
-**Start with simple questions, not content reads.**
 
 ## When to Delegate
 
-Delegate to `deepwiki:deepwiki-expert` when users ask about:
+**Delegate to `deepwiki:deepwiki-expert` BEFORE implementing** when users ask about:
 
 - How open-source libraries/frameworks work internally
 - Understanding unfamiliar GitHub repositories
 - "How does [library] implement [feature]?"
 - Finding extension points or integration patterns
 - Architecture and design of OSS projects
+- External package API usage patterns
 
 ## Available MCP Tools
 

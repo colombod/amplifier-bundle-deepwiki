@@ -2,22 +2,35 @@
 meta:
   name: deepwiki-expert
   description: |
-    Expert at understanding open-source projects using DeepWiki's AI-powered knowledge base.
-    Use PROACTIVELY when users ask about:
-    - How an open-source library/framework works internally
-    - Architecture of GitHub repositories
-    - Understanding codebases they haven't seen before
-    - "How does X library do Y?"
-    - Extending or integrating with open-source projects
+    **THE authoritative expert for understanding open-source projects.** Use DeepWiki's AI-powered 
+    knowledge base to understand GitHub repositories before implementing with external libraries.
+    
+    **🚨 CRITICAL: Use PROACTIVELY - Don't wait for user to prompt! 🚨**
+    
+    **ALWAYS use IMMEDIATELY when you see:**
+    - **GitHub URLs** (e.g., `github.com/owner/repo`, `https://github.com/microsoft/amplifier`)
+    - **"How does [library] work"** type questions
+    - **Library/framework internals** questions (architecture, module design, implementation patterns)
+    - **API integration questions** (implementing with external packages/SDKs)
+    - **Open-source project references** (React, Django, FastAPI, Amplifier, etc.)
+    
+    **Real failure example (Session 89aff774):**
+    User implementing Azure AI Inference SDK → AI guessed at API → User had to interrupt:
+    > "remember to use deepwiki or perplexity for understanding API usage from other packages"
+    
+    After using deepwiki: Got correct imports, method signatures, response structures → prevented errors.
+    
+    **Cost-benefit:** Spending 30 seconds on deepwiki research prevents hours of debugging incorrect
+    API assumptions. ALWAYS research first, implement second.
     
     **Authoritative on:** open-source projects, GitHub repositories, library internals,
-    codebase understanding, project architecture, API documentation, DeepWiki
+    codebase understanding, project architecture, API documentation, SDK usage patterns
     
     **MUST be used for:**
-    - Questions about open-source project internals
-    - Understanding unfamiliar codebases
-    - "Explain how [library] implements [feature]"
-    - Finding the right way to extend or use a library
+    - GitHub repository understanding (authoritative source, not web searches)
+    - Unfamiliar codebase exploration (architecture, patterns, extension points)
+    - External package API usage (correct signatures before implementing)
+    - Library integration patterns (the right way to extend/integrate)
     
     <example>
     user: 'How does React's reconciliation algorithm work?'
@@ -35,6 +48,24 @@ meta:
     user: 'How should I extend LangChain to add a custom memory provider?'
     assistant: 'I'll delegate to deepwiki:deepwiki-expert to understand LangChain's memory architecture and extension patterns.'
     <commentary>Finding the right way to extend libraries requires understanding their internals.</commentary>
+    </example>
+    
+    <example>
+    user: 'I need to integrate with the Azure AI Inference SDK'
+    assistant: 'Before implementing, I'll delegate to deepwiki:deepwiki-expert to understand the SDK's API structure, correct imports, and usage patterns.'
+    <commentary>CRITICAL: Research external APIs BEFORE implementing to prevent errors from incorrect assumptions.</commentary>
+    </example>
+    
+    <example>
+    user: 'Looking at https://github.com/microsoft/amplifier-core for understanding module loading'
+    assistant: 'I see a GitHub URL - I'll immediately delegate to deepwiki:deepwiki-expert to understand amplifier-core's architecture and module loading patterns.'
+    <commentary>GitHub URLs are automatic triggers - delegate immediately, don't use web_search.</commentary>
+    </example>
+    
+    <example>
+    Context: User is implementing with an external library
+    assistant: 'Before implementing with this library, let me delegate to deepwiki:deepwiki-expert to understand its API and best practices.'
+    <commentary>Proactive research prevents implementation errors. Always research BEFORE coding with external APIs.</commentary>
     </example>
 ---
 

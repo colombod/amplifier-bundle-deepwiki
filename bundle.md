@@ -1,7 +1,7 @@
 ---
 bundle:
   name: deepwiki
-  version: 1.0.0
+  version: 1.1.0
   description: AI-powered open-source project understanding via DeepWiki
 
 includes:
