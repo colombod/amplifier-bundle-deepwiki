@@ -35,6 +35,19 @@ GITHUB_URL_RE = re.compile(
     re.IGNORECASE,
 )
 
+# Named patterns that need post-match validation in _has_trigger_pattern.
+# They live in LIBRARY_QUESTION_PATTERNS for public API / test discoverability,
+# but the hook skips them during blind iteration and uses the capturing-group
+# variants (IMPORT_RE / SDK_API_RE) with exclusion filtering instead.
+_IMPORT_PATTERN = re.compile(
+    r"(?:^|\n)\s*(?:import|from) [\w]+",
+    re.IGNORECASE,
+)
+_SDK_API_PATTERN = re.compile(
+    r"[\w.-]+ (?:SDK|API)\b",
+    re.IGNORECASE,
+)
+
 # Library/framework question patterns
 LIBRARY_QUESTION_PATTERNS: list[re.Pattern[str]] = [
     # "How does X work" / "how X works"
@@ -50,27 +63,138 @@ LIBRARY_QUESTION_PATTERNS: list[re.Pattern[str]] = [
         r"(?:implement|integrat|using|connect)\w* (?:with |to )?(?:the )?[\w.-]+ (?:SDK|API|library|package|framework)",
         re.IGNORECASE,
     ),
-    # Extend/customize patterns
-    re.compile(
-        r"(?:extend|customize|configure) [\w.-]+",
-        re.IGNORECASE,
-    ),
     # Import statements: "import fastapi", "from langchain import ..."
-    re.compile(
-        r"(?:^|\n)\s*(?:import|from) [\w]+",
-        re.IGNORECASE,
-    ),
+    _IMPORT_PATTERN,
     # pip/uv install: "pip install X", "uv add X"
     re.compile(
         r"(?:pip install|uv add|poetry add|pip3 install) [\w._-]+",
         re.IGNORECASE,
     ),
     # Direct SDK/API mention: "X SDK", "X API" (standalone, high-confidence)
-    re.compile(
-        r"[\w.-]+ (?:SDK|API)\b",
-        re.IGNORECASE,
-    ),
+    _SDK_API_PATTERN,
 ]
+
+# Capturing-group variants for validated matching in _has_trigger_pattern
+IMPORT_RE = re.compile(
+    r"(?:^|\n)\s*(?:import|from) ([\w]+)",
+    re.IGNORECASE,
+)
+SDK_API_RE = re.compile(
+    r"([\w.-]+) (?:SDK|API)\b",
+    re.IGNORECASE,
+)
+
+# Standard library modules excluded from import-pattern triggers
+STDLIB_MODULES = frozenset(
+    {
+        "os",
+        "sys",
+        "re",
+        "json",
+        "collections",
+        "typing",
+        "pathlib",
+        "dataclasses",
+        "abc",
+        "io",
+        "math",
+        "datetime",
+        "time",
+        "functools",
+        "itertools",
+        "operator",
+        "copy",
+        "enum",
+        "contextlib",
+        "logging",
+        "unittest",
+        "asyncio",
+        "threading",
+        "multiprocessing",
+        "subprocess",
+        "shutil",
+        "tempfile",
+        "glob",
+        "fnmatch",
+        "hashlib",
+        "hmac",
+        "secrets",
+        "base64",
+        "struct",
+        "codecs",
+        "csv",
+        "configparser",
+        "argparse",
+        "textwrap",
+        "string",
+        "dis",
+        "ast",
+        "token",
+        "tokenize",
+        "inspect",
+        "pdb",
+        "traceback",
+        "warnings",
+        "types",
+        "importlib",
+        "pkgutil",
+        "socket",
+        "http",
+        "urllib",
+        "email",
+        "html",
+        "xml",
+        "sqlite3",
+        "zlib",
+        "gzip",
+        "zipfile",
+        "tarfile",
+        "pickle",
+        "shelve",
+        "marshal",
+        "signal",
+        "select",
+        "ssl",
+        "uuid",
+        "pprint",
+        "decimal",
+        "fractions",
+        "random",
+        "statistics",
+        "bisect",
+        "heapq",
+        "array",
+        "queue",
+        "weakref",
+        "ctypes",
+        "platform",
+        "sysconfig",
+        "site",
+    }
+)
+
+# Generic prefixes excluded from standalone "X SDK" / "X API" triggers
+GENERIC_API_PREFIXES = frozenset(
+    {
+        "rest",
+        "web",
+        "internal",
+        "public",
+        "private",
+        "external",
+        "graphql",
+        "grpc",
+        "soap",
+        "custom",
+        "our",
+        "the",
+        "this",
+        "your",
+        "my",
+        "an",
+        "a",
+    }
+)
 
 # Signals that deepwiki was already used or is about to be used
 DEEPWIKI_ALREADY_USED_PATTERNS: list[re.Pattern[str]] = [
@@ -110,12 +234,10 @@ class DeepWikiTriggerHook:
 
     def __init__(self, config: TriggerConfig) -> None:
         self.config = config
-        self._states: dict[str, TriggerState] = {}
-
-    def _get_state(self, session_id: str) -> TriggerState:
-        if session_id not in self._states:
-            self._states[session_id] = TriggerState()
-        return self._states[session_id]
+        # TODO: If multi-session support is added later, replace with a dict
+        # keyed by session_id and implement state eviction (e.g. LRU or TTL)
+        # to prevent unbounded memory growth.
+        self._state = TriggerState()
 
     async def on_provider_request(
         self, _event: str, data: dict[str, Any]
@@ -124,8 +246,7 @@ class DeepWikiTriggerHook:
         if not self.config.enabled:
             return HookResult(action="continue")
 
-        session_id = data.get("session_id", "default")
-        state = self._get_state(session_id)
+        state = self._state
         state.provider_request_count += 1
 
         # Increment turn counters
@@ -152,8 +273,9 @@ class DeepWikiTriggerHook:
         if state.turns_since_deepwiki_use < self.config.cooldown_turns:
             return HookResult(action="continue")
 
-        # Check for trigger patterns
-        if self._has_trigger_pattern(recent):
+        # Check for trigger patterns (user messages only — Fix #2)
+        user_messages = [m for m in recent if m.get("role") == "user"]
+        if self._has_trigger_pattern(user_messages):
             state.turns_since_injection = 0
             state.total_injections += 1
             return HookResult(
@@ -188,9 +310,23 @@ class DeepWikiTriggerHook:
         if GITHUB_URL_RE.search(text):
             return True
 
-        # Check for library/framework question patterns
+        # Check general library/framework patterns (skip validated ones)
         for pattern in LIBRARY_QUESTION_PATTERNS:
+            if pattern is _IMPORT_PATTERN or pattern is _SDK_API_PATTERN:
+                continue  # Handled below with exclusion filtering
             if pattern.search(text):
+                return True
+
+        # Import statements — exclude stdlib modules
+        for match in IMPORT_RE.finditer(text):
+            module_name = match.group(1).lower()
+            if module_name not in STDLIB_MODULES:
+                return True
+
+        # Standalone SDK/API mentions — exclude generic prefixes
+        for match in SDK_API_RE.finditer(text):
+            prefix = match.group(1).lower()
+            if prefix not in GENERIC_API_PREFIXES:
                 return True
 
         return False
