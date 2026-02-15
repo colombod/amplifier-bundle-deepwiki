@@ -1,0 +1,11 @@
+[project]
+name = "amplifier-module-hooks-deepwiki-trigger"
+version = "0.1.0"
+description = "Hook that detects GitHub URLs and library questions, injecting reminders to use deepwiki-expert"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
