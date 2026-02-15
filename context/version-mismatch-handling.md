@@ -1,65 +1,19 @@
 # Version Mismatch Handling Strategy
 
-> **Critical awareness**: DeepWiki indexes repositories at specific points in time and may not reflect the latest package versions installed in your environment.
+> **Context:** The pre-flight freshness protocol (`context/freshness-check.md`) proactively verifies DeepWiki's index freshness before every query. This file defines what to do when staleness risk is MODERATE or HIGH.
 
 ---
 
-## The Version Mismatch Problem
+## How Freshness Verification Works
 
-**DeepWiki provides:** Architecture, design patterns, conceptual understanding
-**DeepWiki may miss:** Latest API changes, recent features, current deprecations
+The expert agent runs a mandatory pre-flight check before every DeepWiki query:
+1. Fetches the repo's latest release + last commit from GitHub
+2. Probes DeepWiki for its coverage version
+3. Computes a staleness risk: LOW / MODERATE / HIGH / UNKNOWN
 
-**Root cause:** DeepWiki's AI-powered knowledge base is built from repository snapshots. Fast-moving projects (frequent releases, active development) can diverge significantly from their indexed state.
-
----
-
-## Recognizing Version Mismatches
-
-### 🔴 Strong Indicators (Immediate action required)
-
-1. **Import/Module errors:**
-   ```python
-   # DeepWiki suggests:
-   from azure.ai.inference import ChatCompletionsClient
-   
-   # Reality:
-   ImportError: cannot import name 'ChatCompletionsClient'
-   ```
-
-2. **Method signature mismatches:**
-   ```python
-   # DeepWiki shows:
-   client.complete(prompt="...")
-   
-   # Reality:
-   TypeError: complete() got an unexpected keyword argument 'prompt'
-   ```
-
-3. **Missing features:**
-   - User mentions feature X exists
-   - DeepWiki doesn't document it
-   - User likely has newer version
-
-4. **Deprecation warnings:**
-   ```python
-   DeprecationWarning: Method 'old_method' is deprecated, use 'new_method'
-   # But DeepWiki only shows old_method
-   ```
-
-### 🟡 Warning Signs (Investigate)
-
-1. **Vague version references:**
-   - DeepWiki answers lack specific version numbers
-   - Documentation seems generic/old
-
-2. **Release date clues:**
-   - DeepWiki references "recent" features from 2+ years ago
-   - Changelog mentions stop at old versions
-
-3. **API inconsistencies:**
-   - Response structures don't match
-   - Parameter names differ slightly
-   - Return types unexpected
+**When risk is LOW:** No special action. Answer normally.
+**When risk is MODERATE or HIGH:** Use the fallback strategies in this file to supplement DeepWiki answers with current information.
+**When risk is UNKNOWN:** Treat information as potentially stale and recommend verification.
 
 ---
 
@@ -200,42 +154,47 @@ rpm -qa | grep [package]  # RedHat/CentOS
 
 ---
 
-## Communication Pattern
+## Communication Patterns
 
-### When DeepWiki Information is Current
+These templates supplement the Freshness Assessment section that always appears first in every response.
+
+### When Staleness Risk is LOW
+
+No additional version caveat needed. The Freshness Assessment header provides the verification data. Answer normally.
+
+### When Staleness Risk is MODERATE
+
+Include after the relevant answer section:
 
 ```markdown
-**Source:** DeepWiki (architecture understanding)
-**Validation:** APIs match official docs v[X.Y.Z]
-**Confidence:** HIGH - proceeding with implementation
+> **⚠️ Freshness note:** DeepWiki's index is slightly behind the latest release.
+> Recent changes (especially in the last {N} days) may not be reflected.
+> For implementation-critical APIs, verify against official docs: {url}
 ```
 
-### When Version Mismatch Detected
+### When Staleness Risk is HIGH
+
+Include prominently:
 
 ```markdown
-**⚠️ Version Mismatch Detected**
-
-**DeepWiki showed:** [what DeepWiki suggested]
-**Reality:** [what actually exists/errors encountered]
-**Likely cause:** DeepWiki indexed v[X.X], you have v[Y.Y]
-
-**Corrective actions taken:**
-1. Fetched current API docs from [source]
-2. Validated against official documentation
-3. Adjusted implementation to match v[Y.Y]
-
-**Recommendation:** Cross-reference DeepWiki's architectural insights with current API docs for [library] to ensure accuracy.
+> **🔴 Staleness warning:** DeepWiki's index is significantly behind (covers {old_version}, latest is {new_version}).
+> Architecture and design pattern information is likely still accurate, but API details may have changed.
+>
+> **Corrective actions taken:**
+> 1. Fetched current API docs from {source}
+> 2. Cross-referenced DeepWiki's architectural insights with current documentation
+>
+> **Recommendation:** Treat API-specific details from DeepWiki as directional. Verify all imports, method signatures, and response structures against official docs.
 ```
 
-### When Uncertain
+### When Staleness Risk is UNKNOWN
+
+Include:
 
 ```markdown
-**DeepWiki provided:** [architectural understanding]
-**Uncertainty:** [what might have changed]
-**Validation recommended:** 
-- Check installed version: `pip show [package]`
-- Verify API: [official docs URL]
-- Test imports before full implementation
+> **ℹ️ Freshness unverified:** Could not determine DeepWiki's coverage version.
+> Information may be current or stale — treat accordingly.
+> Recommend verifying implementation-critical details against official docs: {url}
 ```
 
 ---
@@ -261,54 +220,37 @@ rpm -qa | grep [package]  # RedHat/CentOS
 
 ---
 
-## Workflow Integration
+## Freshness Data Flow
 
-### Standard Research Flow (No Mismatch)
+### How freshness data reaches the calling agent
 
-```
-User request
-    ↓
-DeepWiki (architecture + API)
-    ↓
-Implementation
-    ↓
-Success
-```
+The expert agent includes a structured **Freshness Assessment** as the first section of every response. This gives the calling agent:
 
-### Enhanced Flow (Version-Aware)
+1. **Objective data** — latest release tag, last commit SHA/date, DeepWiki coverage version
+2. **Risk rating** — LOW / MODERATE / HIGH / UNKNOWN
+3. **Gap summary** — human-readable explanation of the delta
+4. **API method** — so the caller knows the reliability of the freshness data itself
 
-```
-User request
-    ↓
-DeepWiki (architecture understanding)
-    ↓
-Version check (if critical)
-    ↓
-Validate APIs (official docs)
-    ↓
-Implementation (combined knowledge)
-    ↓
-Success with confidence
-```
+The calling agent can use this information to:
+- Decide whether to trust the answer as-is (LOW risk)
+- Add caveats when presenting to the user (MODERATE risk)
+- Supplement with additional research (HIGH risk)
+- Flag uncertainty (UNKNOWN risk)
 
-### Recovery Flow (Mismatch Detected)
+### Workflow (always proactive)
 
 ```
-User request
+Caller's question
     ↓
-DeepWiki (gives outdated info)
+Pre-flight freshness check (Steps 1-3)
     ↓
-Implementation attempt
+Freshness Assessment assembled
     ↓
-Error (ImportError, TypeError, etc.)
+DeepWiki query (with staleness context)
     ↓
-RECOGNIZE: Version mismatch
+If MODERATE/HIGH → supplement with fallback strategies (see matrix above)
     ↓
-Fetch current docs (web_fetch/perplexity)
-    ↓
-Correct implementation
-    ↓
-Success (+ report mismatch to user)
+Response with Freshness Assessment header + answer sections
 ```
 
 ---
