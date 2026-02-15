@@ -19,3 +19,8 @@ Real failure (Session 89aff774): User implementing Azure AI Inference SDK → AI
 ## Delegate to the Expert
 
 Use `deepwiki:deepwiki-expert` rather than MCP tools directly. The expert has freshness verification, progressive discovery, and fallback strategies.
+
+## Quick Reference
+
+- Repo format: `owner/repo` (e.g., `facebook/react`) — public repos only
+- Tools: `mcp_deepwiki_ask_question` (fast), `read_wiki_structure`, `read_wiki_contents`
