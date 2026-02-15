@@ -7,32 +7,17 @@ NOT a metadata dict. The cleanup callable should call unregister() when invoked.
 from __future__ import annotations
 
 import asyncio
-import sys
-import types
 import unittest
 from unittest.mock import MagicMock
 
-
-def _setup_amplifier_core_mock() -> None:
-    """Mock amplifier_core so the module can be imported without the real package."""
-    if "amplifier_core" not in sys.modules:
-        mock_module = types.ModuleType("amplifier_core")
-        # HookResult is a dataclass-like object used as return value from hooks
-        mock_module.HookResult = MagicMock(name="HookResult")  # type: ignore[attr-defined]
-        sys.modules["amplifier_core"] = mock_module
-
-
-# Must mock before importing the module under test
-_setup_amplifier_core_mock()
-
-from amplifier_module_hooks_deepwiki_trigger import mount  # noqa: E402
+from amplifier_module_hooks_deepwiki_trigger import mount
 
 
 class TestMountReturnsCleanupCallable(unittest.TestCase):
     """mount() must return a cleanup callable per the hook contract."""
 
     def _run_async(self, coro):  # noqa: ANN001, ANN202
-        return asyncio.get_event_loop().run_until_complete(coro)
+        return asyncio.run(coro)
 
     def _make_coordinator(self) -> MagicMock:
         """Create a mock coordinator whose hooks.register() returns an unregister callable."""

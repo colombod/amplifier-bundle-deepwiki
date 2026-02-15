@@ -17,7 +17,7 @@ from amplifier_module_hooks_deepwiki_trigger import (
 
 def _run(coro):  # noqa: ANN001, ANN202
     """Helper to run async coroutines in sync tests."""
-    return asyncio.get_event_loop().run_until_complete(coro)
+    return asyncio.run(coro)
 
 
 def _make_data(messages: list[dict[str, Any]]) -> dict[str, Any]:
