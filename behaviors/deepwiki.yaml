@@ -17,7 +17,7 @@ tools:
 # or library questions appear in conversation
 hooks:
   - module: hooks-deepwiki-trigger
-    source: deepwiki:modules/hooks-deepwiki-trigger
+    source: ../modules/hooks-deepwiki-trigger
     config:
       enabled: true
       cooldown_turns: 3
