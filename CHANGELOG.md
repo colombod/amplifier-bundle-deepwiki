@@ -5,6 +5,42 @@ All notable changes to the DeepWiki bundle will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-02-15
+
+### Added
+- **Proactive freshness verification** — every DeepWiki query is now preceded by a mandatory pre-flight freshness check
+- New `context/freshness-check.md` — single source of truth for the 4-step pre-flight protocol:
+  1. GitHub Ground Truth (latest release + last commit via `gh api` or `web_fetch` fallback)
+  2. DeepWiki Version Probe (`ask_question` to determine coverage version)
+  3. Staleness Risk Computation (LOW / MODERATE / HIGH / UNKNOWN heuristic)
+  4. Proceed to main query with freshness context
+- Tiered GitHub API access: `gh` CLI (authenticated, higher rate limits) with automatic `web_fetch` fallback (unauthenticated)
+- Structured **Freshness Assessment** output section — always first in every response, with machine-readable key-value fields
+
+### Changed
+- **Shifted from reactive to proactive staleness handling** — version mismatches are now caught before queries, not after errors
+- Updated `agents/deepwiki-expert.md`:
+  - Added freshness-check.md as agent context (@-mention)
+  - Rewrote Standard Workflow to include pre-flight freshness as Step 2
+  - Updated Output Contract to require Freshness Assessment as first section
+  - Replaced inline version-mismatch section with brief reference to pre-flight protocol
+  - Updated meta description to mention proactive freshness verification
+- Updated `context/version-mismatch-handling.md`:
+  - Removed reactive symptom-recognition section (superseded by pre-flight check)
+  - Added Freshness Data Flow section (how freshness data reaches calling agents)
+  - Updated communication templates to align with Freshness Assessment format
+  - Preserved fallback strategy matrix for MODERATE/HIGH risk scenarios
+- Updated `context/deepwiki-awareness.md`:
+  - Version Awareness section now describes proactive verification
+  - Notes that every response includes Freshness Assessment
+- Updated `context/proactive-triggers.md`:
+  - Version mismatch awareness section replaced with freshness verification reference
+  - Summary workflow updated to show proactive freshness as default
+- Updated `README.md` with corrected bundle structure diagram and freshness feature
+
+### Context
+This release addresses the limitation that version staleness was only detected reactively — after errors or inconsistencies surfaced during implementation. The pre-flight freshness protocol ensures every response comes with an objective assessment of data currency, enabling calling agents to make informed decisions about the information they receive.
+
 ## [1.1.0] - 2026-02-04
 
 ### Fixed (Architecture)

@@ -31,6 +31,7 @@ and tools work internally, making it easier to use, extend, and integrate with t
 - **Extension Guidance** - Find the right way to extend or customize libraries
 - **Integration Patterns** - Learn how to integrate with open-source tools
 - **Progressive Discovery** - Efficient question-first exploration strategy
+- **Proactive Freshness Verification** - Every response includes a Freshness Assessment comparing DeepWiki's index against live GitHub data
 
 ## Installation
 
@@ -104,16 +105,19 @@ targeted questions can get you answers faster.
 
 ```
 amplifier-bundle-deepwiki/
-├── bundle.md                    # Thin root bundle
+├── bundle.md                           # Thin root bundle
 ├── behaviors/
-│   └── deepwiki.yaml            # Reusable behavior (MCP config + agent)
+│   └── deepwiki.yaml                   # Reusable behavior (MCP config + agent)
 ├── agents/
-│   └── deepwiki-expert.md       # Context-sink expert agent
+│   └── deepwiki-expert.md              # Context-sink expert agent
 ├── context/
-│   ├── deepwiki-awareness.md    # Thin awareness for delegation
-│   └── deepwiki-usage.md        # Detailed usage patterns
+│   ├── deepwiki-awareness.md           # Thin awareness for delegation
+│   ├── deepwiki-usage.md               # Detailed usage patterns
+│   ├── freshness-check.md              # Pre-flight freshness protocol
+│   ├── proactive-triggers.md           # Automatic trigger patterns
+│   └── version-mismatch-handling.md    # Staleness fallback strategies
 └── docs/
-    └── USAGE.md                 # Human documentation
+    └── USAGE.md                        # Human documentation
 ```
 
 ## Requirements

@@ -46,10 +46,12 @@ General web info? ──YES──▶ Use web_search (broader context)
 
 ## Version Awareness
 
-⚠️ **DeepWiki may be out of sync with installed packages.** The expert agent knows how to:
-- Recognize version mismatches (import errors, signature mismatches)
-- Cross-reference with current docs when needed
-- Combine DeepWiki's architecture knowledge with current API reality
+**Every response includes a Freshness Assessment.** The expert agent proactively verifies DeepWiki's index freshness before every query by checking the repo's latest release and last commit against DeepWiki's reported coverage. Staleness risk is rated LOW / MODERATE / HIGH / UNKNOWN.
+
+The expert agent:
+- Runs a pre-flight freshness check (GitHub API + DeepWiki version probe) before answering
+- Includes a structured Freshness Assessment as the first section of every response
+- Applies fallback strategies when staleness risk is MODERATE or HIGH
 
 ## Available MCP Tools
 

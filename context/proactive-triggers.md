@@ -219,45 +219,20 @@ Before implementing with any external library/SDK, verify:
 
 ---
 
-## Version Mismatch Awareness
+## Freshness Verification (Proactive)
 
-**CRITICAL: DeepWiki may be out of sync with installed package versions.**
+**Freshness is verified automatically before every DeepWiki query.**
 
-**Why this matters:**
-- DeepWiki indexes repositories at specific points in time
-- Fast-moving projects diverge quickly from indexed state
-- Outdated information leads to import errors, signature mismatches, missing features
+The expert agent runs a mandatory pre-flight freshness protocol (defined in `context/freshness-check.md`) as the first step of every workflow:
 
-**Recognize version mismatches:**
-- Import/module not found errors
-- Method signature mismatches (unexpected parameters)
-- Deprecation warnings for APIs DeepWiki recommends
-- User mentions features DeepWiki doesn't show
+1. **GitHub Ground Truth** — fetches latest release + last commit via `gh api` or `web_fetch`
+2. **DeepWiki Version Probe** — asks DeepWiki what version it covers
+3. **Staleness Risk** — computes LOW / MODERATE / HIGH / UNKNOWN
+4. **Freshness Assessment** — structured section included as first output in every response
 
-**When version mismatch suspected:**
+**No reactive symptom detection needed.** The pre-flight check catches staleness before queries, not after errors.
 
-1. **Ask DeepWiki:** "What version is this documentation for?"
-2. **Cross-reference:** Use `web_fetch` for current official docs
-3. **Use perplexity_research:** For version-specific questions
-4. **Combine sources:** DeepWiki (architecture) + official docs (current API)
-
-**Fallback strategy matrix:**
-```
-Architecture/Design     → DeepWiki (PRIMARY)
-Current API docs        → web_fetch official docs (PRIMARY)
-Breaking changes        → web_search + perplexity_research
-Latest features         → web_fetch + web_search
-Version-specific bugs   → perplexity_research
-```
-
-**Communication pattern:**
-When mismatch detected, report to user:
-- What DeepWiki showed vs reality
-- Likely version difference
-- Fallback sources used
-- Recommendation to verify with official docs
-
-See `context/version-mismatch-handling.md` for complete strategy.
+When staleness risk is MODERATE or HIGH, the expert agent applies fallback strategies from `context/version-mismatch-handling.md` to supplement DeepWiki answers with current official documentation.
 
 ---
 
@@ -268,9 +243,9 @@ See `context/version-mismatch-handling.md` for complete strategy.
 Implement → Error → Debug → Research → Fix
 ```
 
-**New default with version awareness:**
+**New default with proactive freshness verification:**
 ```
-Research (deepwiki) → Validate version → Cross-reference if needed → Implement correctly
+Pre-flight freshness check → Research (deepwiki) → Supplement if stale → Implement correctly
 ```
 
 **Trigger checklist:**
@@ -278,6 +253,6 @@ Research (deepwiki) → Validate version → Cross-reference if needed → Imple
 - "How does X work?" (OSS) → deepwiki
 - External SDK/library? → deepwiki BEFORE coding + validate version
 - General web info? → web_search
-- Version mismatch suspected? → deepwiki + web_fetch + perplexity_research
+- Freshness risk HIGH? → deepwiki + web_fetch + perplexity_research (see fallback matrix)
 
 **Remember:** You're reading this file in your context RIGHT NOW. These patterns should guide your behavior automatically.
