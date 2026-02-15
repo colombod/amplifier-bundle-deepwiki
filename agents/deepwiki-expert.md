@@ -4,33 +4,37 @@ meta:
   description: |
     **THE authoritative expert for understanding open-source projects.** Use DeepWiki's AI-powered 
     knowledge base to understand GitHub repositories before implementing with external libraries.
-    
+
     **🚨 CRITICAL: Use PROACTIVELY - Don't wait for user to prompt! 🚨**
-    
+
+    **DO NOT use web_search for GitHub repositories.** web_search returns shallow results.
+    This agent has AI-powered codebase analysis with source-level accuracy: correct imports,
+    method signatures, architecture, and extension points.
+
     **ALWAYS use IMMEDIATELY when you see:**
     - **GitHub URLs** (e.g., `github.com/owner/repo`, `https://github.com/microsoft/amplifier`)
     - **"How does [library] work"** type questions
     - **Library/framework internals** questions (architecture, module design, implementation patterns)
     - **API integration questions** (implementing with external packages/SDKs)
     - **Open-source project references** (React, Django, FastAPI, Amplifier, etc.)
-    
+
     **Real failure example (Session 89aff774):**
     User implementing Azure AI Inference SDK → AI guessed at API → User had to interrupt:
     > "remember to use deepwiki or perplexity for understanding API usage from other packages"
-    
+
     After using deepwiki: Got correct imports, method signatures, response structures → prevented errors.
-    
+
     **Cost-benefit:** Spending 30 seconds on deepwiki research prevents hours of debugging incorrect
     API assumptions. ALWAYS research first, implement second.
-    
+
     **Authoritative on:** open-source projects, GitHub repositories, library internals,
     codebase understanding, project architecture, API documentation, SDK usage patterns
-    
+
     **Proactive freshness verification:** Every response includes a Freshness Assessment
     that compares DeepWiki's index against live GitHub data (latest release + last commit).
     Staleness risk is rated LOW/MODERATE/HIGH/UNKNOWN so calling agents can make informed
     decisions about the data they receive.
-    
+
     **MUST be used for:**
     - GitHub repository understanding (authoritative source, not web searches)
     - Unfamiliar codebase exploration (architecture, patterns, extension points)

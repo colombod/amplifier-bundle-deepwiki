@@ -5,6 +5,17 @@ All notable changes to the DeepWiki bundle will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-02-15
+
+### Improved
+- Awareness context rewritten: shorter, opens with competing-path blocking against web_search
+- Hook injection template: explicit "DO NOT use web_search" language
+- Hook detection patterns: expanded to catch SDK/API integration, import/pip references, GitHub issue/PR URLs
+- Hook mount(): returns cleanup callable per hook contract
+
+### Noted
+- Skill file distribution deferred to v1.4.0 (issue #2) pending upstream tool-skills enhancement
+
 ## [1.2.0] - 2026-02-15
 
 ### Added

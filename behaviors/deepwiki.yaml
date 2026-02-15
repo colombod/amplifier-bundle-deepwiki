@@ -1,6 +1,6 @@
 bundle:
   name: deepwiki-behavior
-  version: 1.1.0
+  version: 1.2.0
   description: DeepWiki MCP integration for understanding open-source projects
 
 # MCP Server Configuration via tool-mcp module
@@ -12,6 +12,16 @@ tools:
         deepwiki:
           type: streamable-http
           url: https://mcp.deepwiki.com/mcp
+
+# Pattern-detection hook: injects deepwiki reminders when GitHub URLs
+# or library questions appear in conversation
+hooks:
+  - module: hooks-deepwiki-trigger
+    source: deepwiki:modules/hooks-deepwiki-trigger
+    config:
+      enabled: true
+      cooldown_turns: 3
+      scan_depth: 3
 
 # Context-sink agent for heavy documentation work
 agents:
