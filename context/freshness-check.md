@@ -3,6 +3,16 @@
 > **Mandatory.** Execute this 4-step protocol BEFORE every DeepWiki query. Never skip it.
 > The goal is to know how fresh DeepWiki's index is *before* trusting any answer.
 
+### Fast-Path for Simple Questions
+
+When the question targets a well-known, stable library (e.g., "how does React's reconciliation work?") and concerns stable concepts rather than recent API changes, use a **simplified freshness note** instead of the full protocol:
+
+1. Skip the GitHub API calls (Steps 1a–1d)
+2. Ask DeepWiki the user's question directly
+3. Include a brief note in the output: `Freshness: fast-path (stable, well-known project — full pre-flight skipped)`
+
+**Criteria:** Project is mature and widely recognized, question is about architecture or design patterns (not recent API surface), and no version-specific concern from the caller. If in doubt, run the full protocol.
+
 ---
 
 ## Step 1 — GitHub Ground Truth
@@ -100,7 +110,7 @@ Execute the caller's original question against DeepWiki with the freshness conte
 
 - **LOW risk:** Answer normally. Freshness Assessment is informational.
 - **MODERATE risk:** Answer with a caveat noting potential gaps. Suggest verifying recent API changes if the query is implementation-focused.
-- **HIGH risk:** Answer with a prominent warning. Recommend cross-referencing with official docs for anything implementation-critical. Use fallback strategy matrix from `version-mismatch-handling.md`.
+- **HIGH risk:** Answer with a prominent warning. Recommend cross-referencing with official docs for anything implementation-critical. Use fallback strategy matrix from `staleness-fallbacks.md`.
 - **UNKNOWN risk:** Answer with a note that freshness could not be verified. Recommend treating information as potentially stale.
 
 ---
@@ -139,19 +149,6 @@ This section appears even when risk is LOW. Callers should never have to guess w
 - **API Method:** gh (authenticated)
 ```
 
-### MODERATE Risk
-
-```
-## Freshness Assessment
-- **Repository:** langchain-ai/langchain
-- **Latest Release:** v0.3.5 (2025-11-20)
-- **Last Commit to Main:** e9c1d44 (2025-12-05) — "feat: add streaming support for new provider"
-- **DeepWiki Reported Coverage:** v0.3.3
-- **Staleness Risk:** MODERATE
-- **Gap Summary:** DeepWiki is 2 minor versions behind (v0.3.3 vs v0.3.5). 15 days of commits not covered. New streaming features may not be reflected.
-- **API Method:** web_fetch (unauthenticated)
-```
-
 ### HIGH Risk
 
 ```
@@ -165,15 +162,4 @@ This section appears even when risk is LOW. Callers should never have to guess w
 - **API Method:** gh (authenticated)
 ```
 
-### UNKNOWN Risk
 
-```
-## Freshness Assessment
-- **Repository:** some-org/some-repo
-- **Latest Release:** v4.2.0 (2025-11-15)
-- **Last Commit to Main:** c8d2e91 (2025-12-01) — "fix: resolve race condition in worker pool"
-- **DeepWiki Reported Coverage:** Unknown (could not determine version)
-- **Staleness Risk:** UNKNOWN
-- **Gap Summary:** DeepWiki could not identify its coverage version. Freshness cannot be assessed — treat information as potentially stale.
-- **API Method:** web_fetch (unauthenticated)
-```

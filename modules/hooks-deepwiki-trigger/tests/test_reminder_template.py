@@ -1,71 +1,93 @@
-"""Tests for REMINDER_TEMPLATE content.
+"""Tests for build_reminder() content.
 
-These tests parse the source file directly to avoid requiring amplifier_core
-to be installed, since we're only testing a string constant.
+Verifies that the contextual reminder function produces correct output
+with all required elements (XML wrapper, web_search blocking, deepwiki
+delegation, freshness verification, detected context).
 """
 
 from __future__ import annotations
 
-import ast
-from pathlib import Path
-
-MODULE_PATH = (
-    Path(__file__).resolve().parent.parent
-    / "amplifier_module_hooks_deepwiki_trigger"
-    / "__init__.py"
+from amplifier_module_hooks_deepwiki_trigger import (
+    TriggerMatch,
+    build_reminder,
 )
 
 
-def _extract_reminder_template() -> str:
-    """Extract REMINDER_TEMPLATE value from the module source via AST parsing."""
-    source = MODULE_PATH.read_text()
-    tree = ast.parse(source)
-    for node in ast.walk(tree):
-        if (
-            isinstance(node, ast.Assign)
-            and len(node.targets) == 1
-            and isinstance(node.targets[0], ast.Name)
-            and node.targets[0].id == "REMINDER_TEMPLATE"
-            and isinstance(node.value, ast.Constant)
-            and isinstance(node.value.value, str)
-        ):
-            return node.value.value
-    raise AssertionError("REMINDER_TEMPLATE not found in module source")
+def _get_sample_reminder() -> str:
+    """Get a sample reminder for testing."""
+    return build_reminder(
+        TriggerMatch(description="Detected: github.com/facebook/react")
+    )
 
 
 class TestReminderTemplateContent:
-    """Verify REMINDER_TEMPLATE has the correct content after the v1.3.0 update."""
+    """Verify build_reminder produces correct content."""
 
     def test_contains_explicit_web_search_blocking(self) -> None:
         """Template must contain explicit 'DO NOT use web_search' language."""
-        template = _extract_reminder_template()
+        template = _get_sample_reminder()
         assert "DO NOT use web_search" in template
 
     def test_contains_deepwiki_expert_delegation(self) -> None:
         """Template must direct to deepwiki:deepwiki-expert."""
-        template = _extract_reminder_template()
+        template = _get_sample_reminder()
         assert "deepwiki:deepwiki-expert" in template
 
     def test_contains_freshness_verification(self) -> None:
         """Template must mention freshness verification capability."""
-        template = _extract_reminder_template()
+        template = _get_sample_reminder()
         assert "freshness verification" in template
 
     def test_is_concise(self) -> None:
-        """Template should be shorter — 4 content lines inside the XML tags."""
-        template = _extract_reminder_template()
-        # Strip the outer XML tags and count non-empty content lines
+        """Template should be concise — 5 non-empty lines including XML tags."""
+        template = _get_sample_reminder()
+        # Expected: opening tag + description + 2 content lines + closing tag = 5
         lines = [line for line in template.strip().splitlines() if line.strip()]
-        # Expected: opening tag + 3 content lines + closing tag = 5 non-empty lines
         assert len(lines) == 5, f"Expected 5 non-empty lines, got {len(lines)}: {lines}"
 
     def test_has_system_reminder_xml_wrapper(self) -> None:
         """Template must be wrapped in system-reminder XML tags."""
-        template = _extract_reminder_template()
+        template = _get_sample_reminder()
         assert '<system-reminder source="hooks-deepwiki-trigger">' in template
         assert "</system-reminder>" in template
 
     def test_no_markdown_bold_formatting(self) -> None:
-        """New template should not use markdown bold (**) formatting."""
-        template = _extract_reminder_template()
+        """Reminder should not use markdown bold (**) formatting."""
+        template = _get_sample_reminder()
         assert "**" not in template
+
+
+class TestReminderContextualContent:
+    """Verify build_reminder includes contextual detection info."""
+
+    def test_includes_github_url_context(self) -> None:
+        """Reminder for GitHub URLs should include the detected URL."""
+        template = build_reminder(
+            TriggerMatch(description="Detected: github.com/facebook/react")
+        )
+        assert "github.com/facebook/react" in template
+
+    def test_includes_library_import_context(self) -> None:
+        """Reminder for library imports should include the library name."""
+        template = build_reminder(
+            TriggerMatch(
+                description="Library reference detected: fastapi (from import statement)"
+            )
+        )
+        assert "fastapi" in template
+
+    def test_includes_package_install_context(self) -> None:
+        """Reminder for package installs should include the package name."""
+        template = build_reminder(
+            TriggerMatch(
+                description="Package reference detected: express (from install command)"
+            )
+        )
+        assert "express" in template
+
+    def test_includes_sdk_api_context(self) -> None:
+        """Reminder for SDK/API mentions should include the vendor name."""
+        template = build_reminder(
+            TriggerMatch(description="Library reference detected: Stripe API")
+        )
+        assert "Stripe API" in template

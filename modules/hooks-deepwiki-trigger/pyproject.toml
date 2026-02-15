@@ -1,6 +1,6 @@
 [project]
 name = "amplifier-module-hooks-deepwiki-trigger"
-version = "0.1.0"
+version = "0.2.0"
 description = "Hook that detects GitHub URLs and library questions, injecting reminders to use deepwiki-expert"
 requires-python = ">=3.11"
 dependencies = []

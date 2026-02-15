@@ -5,6 +5,28 @@ All notable changes to the DeepWiki bundle will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-02-15
+
+### Changed — Context Consolidation (46% token reduction)
+- **Deleted `context/proactive-triggers.md`** — ~90% of its content was design justification or guidance for the root session, not the running agent. The hook module already handles proactive triggering at runtime. (-2,125 tokens)
+- **Replaced `context/version-mismatch-handling.md` with `context/staleness-fallbacks.md`** — Stripped redundant freshness re-explanations, "Best Practices" filler, "Freshness Data Flow" (wrong audience), and "Remember" sections. Kept only: Fallback Strategy Matrix, 4 Recommended Patterns, Official Documentation URLs, Communication Templates. (-1,150 tokens)
+- **Thinned `agents/deepwiki-expert.md` body** — Converted from content-heavy document to thin workflow orchestrator. Removed duplicated progressive discovery diagram, tool table, timeout handling, and Freshness Assessment template (all now single-sourced in @-included context files). (-675 tokens)
+- **Consolidated `context/deepwiki-usage.md`** — Removed duplicated Progressive Discovery intro, repo format examples (already in awareness.md), and Response Quality Checklist (overlaps output contract). Kept Tool-Specific Guidance, exploration strategies, timeout handling. (-675 tokens)
+- **Trimmed `context/freshness-check.md`** — Reduced examples from 4 to 2 (LOW + HIGH risk). Added Fast-Path for Simple Questions to skip full pre-flight for stable, well-known projects. (-275 tokens)
+- **Agent context budget:** ~10,750 tokens → ~5,850 tokens (46% reduction)
+
+### Changed — Hook Module Improvements
+- **Multi-language package manager detection** — Added patterns for `npm install`, `yarn add`, `pnpm add`, `bun add`, `cargo add`, `go get`, `gem install`, `dotnet add package` alongside existing Python package managers
+- **Multi-language import detection** — Added JS/TS (`import from`, `require()`), Rust (`use crate::`), and Go (`import "pkg"`) import patterns with per-language stdlib exclusion sets
+- **Contextual reminder template** — Hook now reports WHAT was detected (e.g., "Detected: github.com/facebook/react" or "Library reference: fastapi (from import)") instead of generic "GitHub repository or library detected"
+- **Injection cap** — Added `max_injections: 15` config to prevent reminder fatigue in long sessions. `total_injections` counter now enforced (was tracked but never read)
+- **Expanded generic exclusions** — Added `backend`, `client`, `server`, `frontend`, `local`, `remote`, `new` to `GENERIC_API_PREFIXES` to reduce false positives
+- **Removed dead state** — Deleted unused `provider_request_count` from `TriggerState`
+- **113 tests pass** including 38 new tests covering multi-language patterns, expanded exclusions, contextual reminders, and injection cap
+
+### Closed
+- **Issue #2** (skill distribution via `@namespace:path`) — Closed as won't-fix. Analysis showed skills don't fit this bundle's delegation pattern: the root agent doesn't need to learn DeepWiki methodology (it just delegates), and the expert agent already has full context via @-mentions. The "upstream blocker" was also moot — `git+https://` URLs in tool config work today, and `skills.sources` in bundle frontmatter is silently dropped by the Bundle pipeline.
+
 ## [1.3.0] - 2026-02-15
 
 ### Improved
@@ -14,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Hook mount(): returns cleanup callable per hook contract
 
 ### Noted
-- Skill file distribution deferred to v1.4.0 (issue #2) pending upstream tool-skills enhancement
+- Skill file distribution deferred to v1.4.0 (issue #2) pending upstream tool-skills enhancement — **Closed in v1.4.0** (skills don't fit delegation pattern)
 
 ## [1.2.0] - 2026-02-15
 

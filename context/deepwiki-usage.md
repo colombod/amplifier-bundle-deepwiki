@@ -1,58 +1,6 @@
 # DeepWiki Usage Patterns
 
-This document provides comprehensive guidance for effectively using DeepWiki 
-to understand open-source projects.
-
----
-
-## Critical Insight: Progressive Discovery
-
-**DeepWiki operations are content-intensive.** The wiki content for a single 
-repository can exceed 400,000 characters. Complex AI-powered questions can 
-take 30+ seconds to process.
-
-**The optimal strategy is progressive discovery:**
-
-```
-Start Simple ──▶ Build Understanding ──▶ Go Deep
-   │                    │                   │
-   │                    │                   │
-   ▼                    ▼                   ▼
-Quick question      Structure scan      Full content
-(fastest)           (fast)              (slowest)
-```
-
-### The Questions-First Approach
-
-**Start with `ask_question`** - not structure or content reads:
-
-| Approach | Speed | When to Use |
-|----------|-------|-------------|
-| `ask_question` (simple) | Fast (5-15s) | First contact, specific queries |
-| `read_wiki_structure` | Fast (2-5s) | Planning deep dives |
-| `ask_question` (complex) | Slow (30-60s) | Synthesis across topics |
-| `read_wiki_contents` | Variable | Need exhaustive detail |
-
-**Why questions first?**
-- DeepWiki's AI synthesizes answers from the full codebase
-- Faster than reading and parsing 400k chars of wiki content
-- Gets you targeted answers without information overload
-
----
-
-## Repository Format
-
-DeepWiki uses GitHub repository identifiers in `owner/repo` format:
-
-| Example | Repository |
-|---------|------------|
-| `facebook/react` | React library |
-| `tiangolo/fastapi` | FastAPI framework |
-| `microsoft/vscode` | VS Code editor |
-| `langchain-ai/langchain` | LangChain framework |
-| `dotnet/interactive` | .NET Interactive |
-
-**Important:** Only public GitHub repositories are accessible.
+Tool-specific best practices and exploration strategies for DeepWiki's MCP tools.
 
 ---
 
@@ -221,14 +169,4 @@ Complex questions may timeout. When this happens:
 | Reading everything | Let questions guide what you need |
 | Missing the big picture | Always start with overview question |
 
----
 
-## Response Quality Checklist
-
-Before returning to the user, ensure your response:
-
-- [ ] Directly answers their question
-- [ ] Uses the repository's terminology
-- [ ] Was obtained efficiently (questions before content reads)
-- [ ] Includes practical guidance they can act on
-- [ ] Suggests next steps if they want to go deeper

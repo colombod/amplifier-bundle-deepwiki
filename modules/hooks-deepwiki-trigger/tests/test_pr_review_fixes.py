@@ -375,6 +375,48 @@ class TestFix5GenericApiExclusion:
 # ---------------------------------------------------------------------------
 
 
+# ---------------------------------------------------------------------------
+# Fix: max_injections cap — hook suppresses after hitting the limit
+# ---------------------------------------------------------------------------
+
+
+class TestMaxInjectionsCap:
+    """Hook should stop injecting after total_injections reaches max_injections."""
+
+    def test_suppressed_after_max_injections(self) -> None:
+        """After max_injections triggers, further matches should be suppressed."""
+        hook = DeepWikiTriggerHook(TriggerConfig(cooldown_turns=0, max_injections=2))
+        data = _make_data(
+            [
+                {"role": "user", "content": "Look at github.com/facebook/react"},
+            ]
+        )
+        # First two should inject
+        r1 = _run(hook.on_provider_request("provider:request", data))
+        assert r1.action == "inject_context", "1st injection should fire"
+        r2 = _run(hook.on_provider_request("provider:request", data))
+        assert r2.action == "inject_context", "2nd injection should fire"
+        # Third should be suppressed by the cap
+        r3 = _run(hook.on_provider_request("provider:request", data))
+        assert r3.action == "continue", (
+            "3rd injection should be suppressed by max_injections cap"
+        )
+
+    def test_no_provider_request_count_field(self) -> None:
+        """TriggerState should NOT have provider_request_count (dead state removed)."""
+        from amplifier_module_hooks_deepwiki_trigger import TriggerState
+
+        state = TriggerState()
+        assert not hasattr(state, "provider_request_count"), (
+            "provider_request_count is dead state and should be removed"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Fix #8: TODO comment for multi-session eviction
+# ---------------------------------------------------------------------------
+
+
 class TestFix8TodoComment:
     """Source should contain a TODO about multi-session state eviction."""
 
