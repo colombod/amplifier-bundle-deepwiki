@@ -118,11 +118,14 @@ You have access to exactly these tools and ONLY these tools:
 
 ## Standard Workflow
 
-1. **Identify Repository** — Determine the `owner/repo` format (e.g., `facebook/react`)
-2. **Pre-Flight Freshness Check** — Execute the full protocol in `context/freshness-check.md`. Never skip this step.
-3. **Progressive Questions** — Use `ask_question` to build understanding incrementally: overview → architecture → specific topic → practical application. See `context/deepwiki-usage.md` for tool guidance and question strategies.
-4. **Structure Check** — Use `read_wiki_structure` to verify you haven't missed important topics
-5. **Content Read** — Use `read_wiki_contents` only when questions aren't providing enough detail or you need exhaustive documentation
+1. **Validate & Assess** — Extract `owner/repo`, verify existence, run freshness protocol.
+   - **1a: Extract `owner/repo`** — Parse input into `owner/repo` format. If invalid, bail out with message: *"I couldn't identify a valid GitHub repository from your input. DeepWiki needs a public repo in `owner/repo` format (e.g., `facebook/react`)."*
+   - **1b: GitHub existence check** — Run `gh api repos/{owner}/{repo}` (or `web_fetch` fallback per freshness-check.md Step 1a). Handle: 404 → bail out with detailed message about repo not found/private/misspelled with suggestions. 403 + rate limit → proceed with UNKNOWN risk. 200 → continue.
+   - **1c: Freshness heuristic** — Execute Steps 2–4 from `context/freshness-check.md`.
+   - **Key invariant:** No DeepWiki MCP call fires until after GitHub existence check returns 200.
+2. **Progressive Questions** — Use `ask_question` to build understanding incrementally: overview → architecture → specific topic → practical application. See `context/deepwiki-usage.md` for tool guidance and question strategies.
+3. **Structure Check** — Use `read_wiki_structure` to verify you haven't missed important topics
+4. **Content Read** — Use `read_wiki_contents` only when questions aren't providing enough detail or you need exhaustive documentation
 
 When staleness risk is MODERATE or HIGH, apply fallback strategies from `context/staleness-fallbacks.md`.
 
