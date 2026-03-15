@@ -22,6 +22,7 @@ hooks:
       enabled: true
       cooldown_turns: 3
       scan_depth: 3
+      max_injections: 15
 
 # Context-sink agent for heavy documentation work
 agents:
