@@ -57,6 +57,108 @@ def build_reminder(match: TriggerMatch) -> str:
 
 
 # ---------------------------------------------------------------------------
+# GitHub platform paths — owner-position segments that are NOT real user orgs
+# ---------------------------------------------------------------------------
+
+GITHUB_PLATFORM_PATHS: frozenset[str] = frozenset(
+    {
+        "settings",
+        "features",
+        "marketplace",
+        "explore",
+        "topics",
+        "trending",
+        "collections",
+        "sponsors",
+        "orgs",
+        "login",
+        "signup",
+        "new",
+        "notifications",
+        "pulls",
+        "issues",
+        "codespaces",
+    }
+)
+
+# Validates a single owner or repo path segment (alphanumeric, dash, dot, underscore)
+_REPO_SEGMENT_RE = re.compile(r"^[a-zA-Z0-9_.-]+$")
+
+
+def _is_valid_repo_format(text: str) -> tuple[bool, str | None]:
+    """Validate and normalise a GitHub owner/repo reference.
+
+    Accepts bare ``owner/repo`` strings, GitHub URLs (with or without scheme /
+    www), and owner/repo with a ``.git`` suffix.  Rejects GitHub platform paths
+    (e.g. ``settings``, ``explore``) used in the owner position.
+
+    Returns:
+        ``(True, "owner/repo")`` for valid inputs.
+        ``(False, None)`` for invalid / unrecognised inputs.
+    """
+    # Step 1: strip whitespace; empty → invalid
+    text = text.strip()
+    if not text:
+        return (False, None)
+
+    # Step 2: strip scheme prefix
+    if text.startswith("https://"):
+        text = text[len("https://") :]
+    elif text.startswith("http://"):
+        text = text[len("http://") :]
+
+    # Step 3: strip www. prefix
+    if text.startswith("www."):
+        text = text[len("www.") :]
+
+    # Step 4: handle github.com host
+    is_github_url = False
+    if text.startswith("github.com/"):
+        text = text[len("github.com/") :]
+        is_github_url = True
+    elif text == "github.com":
+        # bare host with no path
+        return (False, None)
+
+    # Step 5: strip URL fragment and query string (applies to all forms)
+    if "#" in text:
+        text = text[: text.index("#")]
+    if "?" in text:
+        text = text[: text.index("?")]
+
+    # Step 6: strip trailing slash — only for the extracted GitHub URL path.
+    # A bare "owner/repo/" is treated as having three path segments (the third
+    # being empty) and is therefore rejected as-is in the split check below.
+    if is_github_url:
+        text = text.rstrip("/")
+
+    # Step 7: split and require exactly two segments
+    parts = text.split("/")
+    if len(parts) != 2:
+        return (False, None)
+
+    owner, repo = parts
+
+    # Step 8: strip .git suffix from repo
+    if repo.endswith(".git"):
+        repo = repo[:-4]
+
+    # Step 9: both segments must be non-empty
+    if not owner or not repo:
+        return (False, None)
+
+    # Step 10: both segments must contain only valid characters
+    if not _REPO_SEGMENT_RE.match(owner) or not _REPO_SEGMENT_RE.match(repo):
+        return (False, None)
+
+    # Step 11: owner must not be a GitHub platform path
+    if owner.lower() in GITHUB_PLATFORM_PATHS:
+        return (False, None)
+
+    return (True, f"{owner}/{repo}")
+
+
+# ---------------------------------------------------------------------------
 # GitHub URL patterns - matches various formats
 # ---------------------------------------------------------------------------
 
