@@ -372,11 +372,6 @@ class TestFix5GenericApiExclusion:
 
 
 # ---------------------------------------------------------------------------
-# Fix #8: TODO comment for multi-session eviction
-# ---------------------------------------------------------------------------
-
-
-# ---------------------------------------------------------------------------
 # Fix: max_injections cap — hook suppresses after hitting the limit
 # ---------------------------------------------------------------------------
 
@@ -540,7 +535,9 @@ class TestLRUEviction:
 
     def test_eviction_preserves_active_session_tracking(self) -> None:
         """Evicting session-1 does not reset session-2's injection count."""
-        hook = DeepWikiTriggerHook(TriggerConfig(max_sessions=2, max_injections=2, cooldown_turns=0))
+        hook = DeepWikiTriggerHook(
+            TriggerConfig(max_sessions=2, max_injections=2, cooldown_turns=0)
+        )
         # session-1: first access (becomes the LRU once session-2 is added)
         data1 = _make_data(
             [{"role": "user", "content": "Look at github.com/facebook/react"}]

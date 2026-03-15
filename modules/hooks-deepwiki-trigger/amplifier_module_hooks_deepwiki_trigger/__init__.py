@@ -22,6 +22,7 @@ Config options:
     cooldown_turns: int (default: 3) - Turns to wait before re-injecting
     scan_depth: int (default: 3) - Number of recent messages to scan
     max_injections: int (default: 15) - Max injections per session
+    max_sessions: int (default: 64) - Max concurrent sessions before LRU eviction
 """
 
 from __future__ import annotations
@@ -683,6 +684,7 @@ async def mount(
         cooldown_turns: int (default: 3) - LLM calls between re-injections
         scan_depth: int (default: 3) - Recent messages to scan for patterns
         max_injections: int (default: 15) - Max injections per session
+        max_sessions: int (default: 64) - Max concurrent sessions before LRU eviction
 
     Returns:
         Cleanup callable that unregisters the hook handler.
