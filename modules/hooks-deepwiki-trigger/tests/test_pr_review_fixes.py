@@ -443,7 +443,10 @@ class TestFix9GithubUrlValidationGate:
         hook = DeepWikiTriggerHook(TriggerConfig())
         data = _make_data(
             [
-                {"role": "user", "content": "Go to github.com/settings/tokens to create a token"},
+                {
+                    "role": "user",
+                    "content": "Go to github.com/settings/tokens to create a token",
+                },
             ]
         )
         result = _run(hook.on_provider_request("provider:request", data))
@@ -475,4 +478,127 @@ class TestFix9GithubUrlValidationGate:
         result = _run(hook.on_provider_request("provider:request", data))
         assert result.action == "continue", (
             "github.com/explore/trending (platform path) should not trigger injection"
+        )
+
+
+# ---------------------------------------------------------------------------
+# LRU eviction for multi-session state management
+# ---------------------------------------------------------------------------
+
+
+class TestLRUEviction:
+    """Hook evicts oldest sessions when max_sessions is exceeded (LRU policy)."""
+
+    def test_eviction_drops_oldest_session(self) -> None:
+        """Adding a 3rd session when max_sessions=2 drops the oldest (session-1)."""
+        hook = DeepWikiTriggerHook(TriggerConfig(max_sessions=2))
+        for sid in ("session-1", "session-2", "session-3"):
+            data = _make_data(
+                [{"role": "user", "content": "Look at github.com/facebook/react"}]
+            )
+            data["session_id"] = sid
+            _run(hook.on_provider_request("provider:request", data))
+        assert "session-1" not in hook._state, "session-1 should have been evicted"
+        assert "session-2" in hook._state, "session-2 should still be present"
+        assert "session-3" in hook._state, "session-3 should still be present"
+
+    def test_access_refreshes_lru_position(self) -> None:
+        """Re-accessing session-1 before adding session-3 keeps session-1, evicts session-2."""
+        hook = DeepWikiTriggerHook(TriggerConfig(max_sessions=2))
+        # Add session-1 and session-2
+        for sid in ("session-1", "session-2"):
+            data = _make_data(
+                [{"role": "user", "content": "Look at github.com/facebook/react"}]
+            )
+            data["session_id"] = sid
+            _run(hook.on_provider_request("provider:request", data))
+        # Re-access session-1 (refreshes its LRU position)
+        data = _make_data(
+            [{"role": "user", "content": "Look at github.com/facebook/react"}]
+        )
+        data["session_id"] = "session-1"
+        _run(hook.on_provider_request("provider:request", data))
+        # Add session-3 — should evict session-2 (the LRU)
+        data = _make_data(
+            [{"role": "user", "content": "Look at github.com/facebook/react"}]
+        )
+        data["session_id"] = "session-3"
+        _run(hook.on_provider_request("provider:request", data))
+        assert "session-1" in hook._state, (
+            "session-1 was recently accessed, should survive"
+        )
+        assert "session-2" not in hook._state, (
+            "session-2 should have been evicted (LRU)"
+        )
+        assert "session-3" in hook._state, "session-3 should be present"
+
+    def test_eviction_preserves_active_session_tracking(self) -> None:
+        """Evicting session-1 does not reset session-2's injection count."""
+        hook = DeepWikiTriggerHook(TriggerConfig(max_sessions=2, max_injections=2))
+        # session-1: first access (becomes the LRU once session-2 is added)
+        data1 = _make_data(
+            [{"role": "user", "content": "Look at github.com/facebook/react"}]
+        )
+        data1["session_id"] = "session-1"
+        _run(hook.on_provider_request("provider:request", data1))
+        # session-2: first injection
+        data2 = _make_data(
+            [{"role": "user", "content": "Look at github.com/facebook/react"}]
+        )
+        data2["session_id"] = "session-2"
+        r1 = _run(hook.on_provider_request("provider:request", data2))
+        assert r1.action == "inject_context", "1st injection for session-2 should fire"
+        # session-3: evicts session-1 (the LRU)
+        data3 = _make_data(
+            [{"role": "user", "content": "Look at github.com/facebook/react"}]
+        )
+        data3["session_id"] = "session-3"
+        _run(hook.on_provider_request("provider:request", data3))
+        # session-2's 2nd injection should still fire (count preserved through eviction)
+        data2b = _make_data(
+            [{"role": "user", "content": "Look at github.com/facebook/react"}]
+        )
+        data2b["session_id"] = "session-2"
+        r2 = _run(hook.on_provider_request("provider:request", data2b))
+        assert r2.action == "inject_context", (
+            "session-2's 2nd injection should still fire after session-1 was evicted"
+        )
+
+    def test_no_session_id_uses_default(self) -> None:
+        """When data has no session_id, hook uses '__default__' key in _state."""
+        hook = DeepWikiTriggerHook(TriggerConfig(max_sessions=2))
+        data = _make_data(
+            [{"role": "user", "content": "Look at github.com/facebook/react"}]
+        )
+        # No session_id in data
+        _run(hook.on_provider_request("provider:request", data))
+        assert "__default__" in hook._state, (
+            "When no session_id present, hook should use '__default__' key in _state"
+        )
+
+
+# ---------------------------------------------------------------------------
+# max_injections config
+# ---------------------------------------------------------------------------
+
+
+class TestMaxInjectionsConfig:
+    """TriggerConfig.max_injections stores and applies the configured cap."""
+
+    def test_config_value_is_stored(self) -> None:
+        """TriggerConfig(max_injections=42) stores value 42."""
+        config = TriggerConfig(max_injections=42)
+        assert config.max_injections == 42, "max_injections should be stored as 42"
+
+    def test_config_overrides_default_behaviorally(self) -> None:
+        """max_injections=1 allows exactly 1 injection; 2nd call returns continue."""
+        hook = DeepWikiTriggerHook(TriggerConfig(max_injections=1))
+        data = _make_data(
+            [{"role": "user", "content": "Look at github.com/facebook/react"}]
+        )
+        r1 = _run(hook.on_provider_request("provider:request", data))
+        assert r1.action == "inject_context", "1st injection should fire"
+        r2 = _run(hook.on_provider_request("provider:request", data))
+        assert r2.action == "continue", (
+            "2nd injection should be suppressed (max_injections=1)"
         )
