@@ -115,7 +115,7 @@ amplifier-bundle-deepwiki/
 │   ├── deepwiki-usage.md               # Detailed usage patterns
 │   ├── freshness-check.md              # Pre-flight freshness protocol
 │   ├── proactive-triggers.md           # Automatic trigger patterns
-│   └── version-mismatch-handling.md    # Staleness fallback strategies
+│   └── staleness-fallbacks.md          # Staleness fallback strategies
 └── docs/
     └── USAGE.md                        # Human documentation
 ```
@@ -128,10 +128,9 @@ amplifier-bundle-deepwiki/
 
 ## Limitations
 
-- **Public repositories only** - DeepWiki indexes public GitHub repos
-- **Private repos** - Require a [Devin.ai](https://devin.ai) account
-- **Indexing delay** - Very new or obscure repos may not be fully indexed yet
-- **Complex queries** - May timeout; break into smaller questions
+- **Public repositories only** — DeepWiki indexes public GitHub repositories. Private or non-existent repos are detected early: the agent checks GitHub for a 200 response before making any DeepWiki calls, and bails out with helpful suggestions if the repo isn't found.
+- **DeepWiki indexing required** — Very new or obscure repos may not yet be indexed. The agent handles this gracefully.
+- **Complex queries** — May timeout; the agent breaks them into smaller questions automatically.
 
 ## Contributing
 
