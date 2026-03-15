@@ -80,6 +80,10 @@ includes:
 This bundle integrates with the **DeepWiki MCP Server** using the 
 [Model Context Protocol](https://modelcontextprotocol.io/).
 
+### Architecture
+
+![Bundle Architecture](context/architecture.svg)
+
 ### MCP Tools Provided
 
 | Tool | Description |

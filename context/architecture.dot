@@ -1,0 +1,128 @@
+digraph architecture {
+    rankdir=TB
+    fontname="Helvetica"
+    fontsize=12
+    node [fontname="Helvetica", fontsize=10, style=filled, shape=box, margin="0.15,0.08"]
+    edge [fontname="Helvetica", fontsize=9]
+    compound=true
+    newrank=true
+    splines=polyline
+
+    // ================================================================
+    // SUBGRAPH 1: Component Map
+    // ================================================================
+    subgraph cluster_components {
+        label="Component Map"
+        labeljust=l
+        fontsize=13
+        fontname="Helvetica"
+        style="rounded,dashed"
+        color="#666666"
+        bgcolor="#f9f9f9"
+
+        bundle [label="bundle.md\n(entry point)", fillcolor="#e6f0ff", shape=box]
+
+        behavior [label="behaviors/deepwiki.yaml\n(wiring layer)", fillcolor="#cce5ff"]
+
+        bundle -> behavior
+
+        tool_mcp [label="tool-mcp\nDeepWiki MCP server\n(streamable-http)", fillcolor="#cce5ff"]
+        hook_module [label="hooks-deepwiki-trigger\nPython hook module\n(pattern detection, format validation,\nanti-spam, LRU state)", fillcolor="#cce5ff"]
+        agent_comp [label="deepwiki-expert agent\nContext-sink expert\n(Validate & Assess workflow)", fillcolor="#cce5ff"]
+
+        behavior -> tool_mcp
+        behavior -> hook_module
+        behavior -> agent_comp
+
+        subgraph cluster_context {
+            label="Context Files"
+            labeljust=l
+            fontsize=10
+            style="rounded"
+            color="#99bbdd"
+            bgcolor="#e6f0ff"
+
+            ctx1 [label="deepwiki-awareness.md", fillcolor="#ddeeff", shape=note]
+            ctx2 [label="deepwiki-usage.md", fillcolor="#ddeeff", shape=note]
+            ctx3 [label="freshness-check.md", fillcolor="#ddeeff", shape=note]
+            ctx4 [label="staleness-fallbacks.md", fillcolor="#ddeeff", shape=note]
+        }
+
+        behavior -> ctx1 [lhead=cluster_context]
+    }
+
+    // ================================================================
+    // SUBGRAPH 2: Request Flow
+    // ================================================================
+    subgraph cluster_flow {
+        label="Request Flow"
+        labeljust=l
+        fontsize=13
+        fontname="Helvetica"
+        style="rounded,dashed"
+        color="#666666"
+        bgcolor="#f9f9f9"
+
+        // Happy-path nodes (straight down)
+        user_msg [label="User Message", fillcolor="#e6f0ff", shape=oval]
+
+        pattern_detect [label="Pattern Detection\nGitHub URLs, library questions,\nimports, SDK/API mentions,\npackage install commands", fillcolor="#cce5ff"]
+
+        format_valid [label="Format Validation\n_is_valid_repo_format()\nvalid owner/repo? not a platform path?", fillcolor="#cce5ff"]
+
+        antispam [label="Anti-Spam Gates\ncooldown, injection cap,\ndeepwiki-already-used, LRU state", fillcolor="#cce5ff"]
+
+        inject [label="Inject Reminder\nsystem-reminder:\ndelegate to deepwiki-expert", fillcolor="#ddeeff"]
+
+        agent_flow [label="Agent: Validate & Assess\nextract owner/repo,\nGitHub existence check,\nfreshness heuristic", fillcolor="#cce5ff"]
+
+        mcp_calls [label="DeepWiki MCP Calls\nask_question,\nread_wiki_structure,\nread_wiki_contents", fillcolor="#cce5ff"]
+
+        response [label="Response\nFreshness Assessment + Answer", fillcolor="#ccffcc", shape=oval]
+
+        // Happy path edges
+        user_msg -> pattern_detect
+        pattern_detect -> format_valid
+        format_valid -> antispam
+        antispam -> inject
+        inject -> agent_flow
+        agent_flow -> mcp_calls
+        mcp_calls -> response
+
+        // Bail-out nodes (right side, red-ish)
+        bail_format [label="Silent skip\n(invalid format)", fillcolor="#ffcccc", shape=octagon]
+        bail_spam [label="Silent skip\n(blocked)", fillcolor="#ffcccc", shape=octagon]
+        bail_parse [label="Bail: format guidance\n(unparseable)", fillcolor="#ffcccc", shape=octagon]
+        bail_404 [label="Bail: not found\n+ suggestions", fillcolor="#ffcccc", shape=octagon]
+        bail_transport [label="Bail: retry once,\nfallback suggestions\n(transport failure)", fillcolor="#ffcccc", shape=octagon]
+
+        // Bail-out edges
+        format_valid -> bail_format [label="INVALID", style=dashed, color="#cc4444"]
+        antispam -> bail_spam [label="BLOCKED", style=dashed, color="#cc4444"]
+        agent_flow -> bail_parse [label="UNPARSEABLE", style=dashed, color="#cc4444"]
+        agent_flow -> bail_404 [label="404", style=dashed, color="#cc4444"]
+        mcp_calls -> bail_transport [label="FAILURE", style=dashed, color="#cc4444"]
+
+        // Force bail-out nodes to the right
+        { rank=same; format_valid; bail_format }
+        { rank=same; antispam; bail_spam }
+        { rank=same; agent_flow; bail_parse; bail_404 }
+        { rank=same; mcp_calls; bail_transport }
+    }
+
+    // ================================================================
+    // Cross-subgraph connections
+    // ================================================================
+    hook_module -> pattern_detect [
+        label="on provider:request event",
+        style=bold,
+        color="#4477aa",
+        fontcolor="#4477aa"
+    ]
+    agent_comp -> agent_flow [
+        label="delegates to",
+        style=bold,
+        color="#4477aa",
+        fontcolor="#4477aa"
+    ]
+}
