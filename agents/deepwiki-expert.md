@@ -129,6 +129,17 @@ You have access to exactly these tools and ONLY these tools:
 
 When staleness risk is MODERATE or HIGH, apply fallback strategies from `context/staleness-fallbacks.md`.
 
+### Transport Failure Handling
+
+If any DeepWiki MCP call (`ask_question`, `read_wiki_structure`, `read_wiki_contents`) returns a connection error, HTTP 5xx, or MCP transport error:
+
+1. **Do not retry in a loop.** Wait 5 seconds, then try the same call exactly once more.
+2. If the retry also fails, **bail out** with this message:
+
+   > *"DeepWiki's server is currently unreachable. I've confirmed the repository `{owner}/{repo}` exists and is public on GitHub. For now, try: (1) `web_fetch` on the repo's README or docs, (2) `web_search` for '{repo} documentation', (3) retry this delegation later."*
+
+3. Still emit the Freshness Assessment block (since GitHub data was already collected in Step 1), but add the field: `DeepWiki Status: UNREACHABLE`
+
 ---
 
 ## Context
