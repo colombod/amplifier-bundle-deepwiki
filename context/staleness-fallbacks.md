@@ -14,6 +14,7 @@
 | **Latest features** | ❌ Likely missing | ✅ Primary | ✅ Primary | 🟡 If obscure |
 | **Migration guides** | ❌ Won't have | 🟡 Official docs | ✅ Primary | ✅ For complex |
 | **Version-specific bugs** | ❌ Won't have | 🟡 Release notes | ✅ Primary | ✅ For research |
+| **UNREACHABLE (DeepWiki down)** | ❌ Unavailable | ✅ Primary | ✅ Primary | 🟡 If complex |
 
 ---
 
@@ -53,6 +54,16 @@
 5. Implement ──▶ With corrected information
 ```
 **Use when:** DeepWiki information doesn't match reality
+
+### Pattern 5: DeepWiki Unreachable
+```
+1. GitHub check ──▶ Confirmed repo exists (200)
+2. DeepWiki ──▶ Connection failed (retry once, still failed)
+3. web_fetch ──▶ Repo README, official docs
+4. web_search ──▶ '{repo} documentation', '{repo} architecture'
+5. Report ──▶ With Freshness Assessment showing UNREACHABLE
+```
+**Use when:** DeepWiki MCP server is down or unreachable after one retry
 
 ---
 
@@ -116,4 +127,19 @@ Include:
 > **ℹ️ Freshness unverified:** Could not determine DeepWiki's coverage version.
 > Information may be current or stale — treat accordingly.
 > Recommend verifying implementation-critical details against official docs: {url}
+```
+
+### UNREACHABLE
+Include:
+
+```markdown
+> **🔴 DeepWiki unreachable:** The DeepWiki MCP server is currently unavailable.
+> The repository `{owner}/{repo}` has been verified as public on GitHub.
+>
+> **Fallback actions taken:**
+> 1. Fetched repository README and available documentation via `web_fetch`
+> 2. Searched for '{repo} documentation' via `web_search`
+>
+> **Recommendation:** Retry the DeepWiki delegation later for comprehensive codebase analysis.
+> The information below is based on publicly available documentation only.
 ```
