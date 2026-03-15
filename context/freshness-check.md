@@ -11,7 +11,7 @@ When the question targets a well-known, stable library (e.g., "how does React's 
 2. Ask DeepWiki the user's question directly
 3. Include a brief note in the output: `Freshness: fast-path (stable, well-known project — full pre-flight skipped)`
 
-**Criteria:** Project is mature and widely recognized, question is about architecture or design patterns (not recent API surface), and no version-specific concern from the caller. If in doubt, run the full protocol.
+**Criteria:** The project has 10k+ GitHub stars or is a household name (React, Django, Linux, PostgreSQL, etc.), the question is about architecture or design patterns (not recent API surface), and there is no version-specific concern from the caller. Use judgment — this isn't a hard list, but "well-known" means widely recognized in the developer community. If in doubt, run the full protocol.
 
 ---
 
@@ -62,7 +62,7 @@ Note which path was used: `gh (authenticated)` or `web_fetch (unauthenticated)`.
 | Failure | Detection | Behavior |
 |---------|-----------|----------|
 | Rate limited | HTTP 403 + `rate limit` in body | Set risk to **UNKNOWN**, note "GitHub API rate limited", proceed |
-| Repo not found | HTTP 404 on repo root | **Abort** — report "Repository not found on GitHub" to calling agent |
+| Repo not found | HTTP 404 on repo root | **Abort** — bail out with: *"The repository `{owner}/{repo}` was not found on GitHub. It may not exist, may be private, or may be misspelled. DeepWiki only works with public GitHub repositories. You could try: `web_search` for the project, or check the spelling."* |
 | Network error / timeout | `web_fetch` failure | If `gh` not yet tried, try `gh api`; otherwise set API method to `UNAVAILABLE` with reason |
 | `gh` not installed | `gh auth status` non-zero | Silent fallback to `web_fetch` (expected) |
 
