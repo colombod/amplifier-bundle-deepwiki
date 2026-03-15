@@ -428,3 +428,51 @@ class TestFix8TodoComment:
         assert "TODO" in source and "eviction" in source.lower(), (
             "Missing TODO comment about state eviction for multi-session support"
         )
+
+
+# ---------------------------------------------------------------------------
+# Fix #9: Wire _is_valid_repo_format into GitHub URL detection
+# ---------------------------------------------------------------------------
+
+
+class TestFix9GithubUrlValidationGate:
+    """GitHub URL detection must reject platform paths via _is_valid_repo_format."""
+
+    def test_settings_tokens_url_not_detected(self) -> None:
+        """'github.com/settings/tokens' is a platform path and must NOT trigger."""
+        hook = DeepWikiTriggerHook(TriggerConfig())
+        data = _make_data(
+            [
+                {"role": "user", "content": "Go to github.com/settings/tokens to create a token"},
+            ]
+        )
+        result = _run(hook.on_provider_request("provider:request", data))
+        assert result.action == "continue", (
+            "github.com/settings/tokens (platform path) should not trigger injection"
+        )
+
+    def test_valid_repo_url_still_detected(self) -> None:
+        """'github.com/facebook/react' is a valid repo and must still trigger."""
+        hook = DeepWikiTriggerHook(TriggerConfig())
+        data = _make_data(
+            [
+                {"role": "user", "content": "Look at github.com/facebook/react"},
+            ]
+        )
+        result = _run(hook.on_provider_request("provider:request", data))
+        assert result.action == "inject_context", (
+            "github.com/facebook/react (valid repo) should still trigger injection"
+        )
+
+    def test_explore_url_not_detected(self) -> None:
+        """'github.com/explore/topic' is a platform path and must NOT trigger."""
+        hook = DeepWikiTriggerHook(TriggerConfig())
+        data = _make_data(
+            [
+                {"role": "user", "content": "Browse github.com/explore/trending"},
+            ]
+        )
+        result = _run(hook.on_provider_request("provider:request", data))
+        assert result.action == "continue", (
+            "github.com/explore/trending (platform path) should not trigger injection"
+        )

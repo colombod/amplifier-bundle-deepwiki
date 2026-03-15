@@ -588,10 +588,12 @@ class DeepWikiTriggerHook:
         """
         text = self._extract_text(messages)
 
-        # Check for GitHub URLs
+        # Check for GitHub URLs (with format validation)
         m = GITHUB_URL_RE.search(text)
         if m:
-            return TriggerMatch(description=f"Detected: {m.group(0)}")
+            valid, _repo = _is_valid_repo_format(m.group(0))
+            if valid:
+                return TriggerMatch(description=f"Detected: {m.group(0)}")
 
         # Check general library/framework patterns (skip validated ones)
         for pattern in LIBRARY_QUESTION_PATTERNS:
