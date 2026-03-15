@@ -7,6 +7,7 @@ before the corresponding fix is applied.
 from __future__ import annotations
 
 import asyncio
+from collections import OrderedDict
 from typing import Any
 
 from amplifier_module_hooks_deepwiki_trigger import (
@@ -417,17 +418,22 @@ class TestMaxInjectionsCap:
 # ---------------------------------------------------------------------------
 
 
-class TestFix8TodoComment:
-    """Source should contain a TODO about multi-session state eviction."""
+class TestFix8EvictionImplemented:
+    """LRU eviction should be implemented, not just a TODO comment."""
 
-    def test_todo_comment_exists(self) -> None:
-        """There should be a TODO comment about state eviction for multi-session."""
-        import inspect
-
-        source = inspect.getsource(DeepWikiTriggerHook)
-        assert "TODO" in source and "eviction" in source.lower(), (
-            "Missing TODO comment about state eviction for multi-session support"
+    def test_state_is_ordered_dict(self) -> None:
+        """hook._state should be an OrderedDict (LRU backing structure)."""
+        hook = DeepWikiTriggerHook(TriggerConfig())
+        assert isinstance(hook._state, OrderedDict), (
+            "hook._state must be an OrderedDict for LRU eviction support"
         )
+
+    def test_get_or_create_state_exists(self) -> None:
+        """DeepWikiTriggerHook should have a _get_or_create_state method."""
+        hook = DeepWikiTriggerHook(TriggerConfig())
+        assert hasattr(hook, "_get_or_create_state") and callable(
+            hook._get_or_create_state
+        ), "Hook must have a _get_or_create_state(session_id) method"
 
 
 # ---------------------------------------------------------------------------
@@ -534,7 +540,7 @@ class TestLRUEviction:
 
     def test_eviction_preserves_active_session_tracking(self) -> None:
         """Evicting session-1 does not reset session-2's injection count."""
-        hook = DeepWikiTriggerHook(TriggerConfig(max_sessions=2, max_injections=2))
+        hook = DeepWikiTriggerHook(TriggerConfig(max_sessions=2, max_injections=2, cooldown_turns=0))
         # session-1: first access (becomes the LRU once session-2 is added)
         data1 = _make_data(
             [{"role": "user", "content": "Look at github.com/facebook/react"}]

@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from collections import OrderedDict
 from collections.abc import Callable
 from typing import Any
 
@@ -487,6 +488,7 @@ class TriggerConfig:
     cooldown_turns: int = 3
     scan_depth: int = 3
     max_injections: int = 15
+    max_sessions: int = 64
 
 
 @dataclass
@@ -503,10 +505,18 @@ class DeepWikiTriggerHook:
 
     def __init__(self, config: TriggerConfig) -> None:
         self.config = config
-        # TODO: If multi-session support is added later, replace with a dict
-        # keyed by session_id and implement state eviction (e.g. LRU or TTL)
-        # to prevent unbounded memory growth.
-        self._state = TriggerState()
+        self._state: OrderedDict[str, TriggerState] = OrderedDict()
+
+    def _get_or_create_state(self, session_id: str) -> TriggerState:
+        """Get or create per-session state with LRU eviction."""
+        if session_id in self._state:
+            self._state.move_to_end(session_id)
+            return self._state[session_id]
+        state = TriggerState()
+        self._state[session_id] = state
+        if len(self._state) > self.config.max_sessions:
+            self._state.popitem(last=False)
+        return state
 
     async def __call__(self, event: str, data: dict[str, Any]) -> HookResult:
         """HookHandler protocol entry point."""
@@ -519,7 +529,8 @@ class DeepWikiTriggerHook:
         if not self.config.enabled:
             return HookResult(action="continue")
 
-        state = self._state
+        session_id = data.get("session_id", "__default__")
+        state = self._get_or_create_state(session_id)
 
         # Increment turn counters
         state.turns_since_injection += 1
@@ -683,6 +694,7 @@ async def mount(
         cooldown_turns=config.get("cooldown_turns", 3),
         scan_depth=config.get("scan_depth", 3),
         max_injections=config.get("max_injections", 15),
+        max_sessions=config.get("max_sessions", 64),
     )
 
     hook = DeepWikiTriggerHook(trigger_config)
