@@ -128,3 +128,9 @@ by this bundle's free MCP endpoint.
 - Ask more specific follow-up questions
 - Request the agent to explore specific documentation sections
 - Break complex questions into smaller parts
+
+## Limitations
+
+- **Public repositories only** — DeepWiki indexes public GitHub repositories. Private repositories return a 404 and the agent bails out with alternative suggestions (`web_search`, check spelling).
+- **DeepWiki indexing required** — Very new or obscure repositories may not yet be indexed by DeepWiki. If the repo exists on GitHub but DeepWiki has no data, the agent will note this and suggest alternatives.
+- **No private repo support** — Private repos require a [Devin.ai](https://devin.ai) account and are not supported by this bundle's free MCP endpoint (`https://mcp.deepwiki.com/mcp`).
