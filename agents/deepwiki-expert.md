@@ -1,7 +1,7 @@
 ---
 meta:
   name: deepwiki-expert
-  model_role: research
+  model_role: [research, general]
   description: |
     **THE authoritative expert for understanding open-source projects.** Use DeepWiki's AI-powered 
     knowledge base to understand GitHub repositories before implementing with external libraries.

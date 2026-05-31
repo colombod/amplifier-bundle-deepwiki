@@ -42,7 +42,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   never had that tool); now framed as an optional capability only if composed.
 
 ### Added
-- `model_role: research` on the `deepwiki-expert` agent for correct model routing.
+- `model_role: [research, general]` on the `deepwiki-expert` agent for correct model
+  routing. `research` is a canonical routing-matrix role (defined in all shipped matrices —
+  anthropic, balanced, openai, gemini, ollama, copilot, economy, quality) and is the right
+  fit for multi-source investigation; the trailing `general` is the documented fallback so
+  the agent still resolves cleanly when a consumer uses a custom matrix or no routing-matrix
+  at all.
 - `AGENTS.md` — in-repo authoring/test/validation guidance.
 - `bundle.dot` / `bundle.png` — repository architecture diagram (via `generate-bundle-docs`).
 - `.amplifier/dtu/` — reusable Digital Twin Universe profile + README for end-to-end testing.
