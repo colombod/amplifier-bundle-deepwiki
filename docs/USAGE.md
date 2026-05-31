@@ -4,22 +4,37 @@ This guide explains how to use the DeepWiki bundle for understanding open-source
 
 ## Quick Start
 
-### Option 1: Use as Primary Bundle
+### Option 1: Add to Your Existing Setup with `--app` (Recommended)
+
+Layer DeepWiki onto every session without replacing your active bundle. The `--app`
+flag registers it as an app bundle that is auto-composed on top of whatever primary
+bundle you use:
+
+```bash
+amplifier bundle add git+https://github.com/colombod/amplifier-bundle-deepwiki@main --app
+
+# Available immediately in every session — no `bundle use` needed
+amplifier run "How does React's virtual DOM work?"
+```
+
+### Option 2: Use as Primary Bundle
+
+Make DeepWiki your active bundle (it includes foundation capabilities):
 
 ```bash
 # Add the bundle
 amplifier bundle add git+https://github.com/colombod/amplifier-bundle-deepwiki@main
 
-# Set as active bundle
+# Set as active bundle (scope with --local | --project | --global)
 amplifier bundle use deepwiki
 
 # Start using it
 amplifier run "How does React's virtual DOM work?"
 ```
 
-### Option 2: Compose into Your Bundle
+### Option 3: Compose into Your Own Bundle (Bundle Authors)
 
-Add the DeepWiki behavior to your existing bundle:
+If you are *authoring* a bundle, include the DeepWiki behavior as a reusable capability:
 
 ```yaml
 # your-bundle.md
@@ -47,9 +62,11 @@ open-source projects. It's automatically available for delegation.
 - "How can I extend [framework]?"
 - "What's the best way to integrate with [library]?"
 
-### MCP Tools
+### MCP Tools (scoped to the expert agent)
 
-Three DeepWiki tools are available:
+The DeepWiki MCP server is configured **inside the `deepwiki-expert` sub-session**, not the
+root session. You delegate to the expert and it calls these tools internally — they are not
+exposed for direct use in your root session:
 
 | Tool | Description |
 |------|-------------|

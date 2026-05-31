@@ -1,0 +1,103 @@
+# Digital Twin Universe profile — validates LOCAL changes to the deepwiki bundle.
+#
+# This profile installs Amplifier in an isolated Incus container and layers the
+# deepwiki capability bundle onto every session via `--app`, exactly as the
+# README instructs end users to. The bundle source is redirected from GitHub to
+# a local Gitea mirror (via url_rewrites) so the LOCAL working-tree changes are
+# tested rather than the published GitHub version.
+#
+# Relaunch instructions and the validation checklist live in README.md next to
+# this file.
+#
+# Required launch vars (the mirror endpoint reachable from inside the container):
+#   --var GITEA_URL=http://<host-gateway-ip>:<port>
+#   --var GITEA_TOKEN=<admin-token>
+#
+# Example:
+#   amplifier-digital-twin launch .amplifier/dtu/deepwiki-validation.yaml \
+#     --var GITEA_URL=http://10.160.61.1:10110 \
+#     --var GITEA_TOKEN=<token> \
+#     --name deepwiki-validation
+name: deepwiki-validation
+description: >
+  Validates LOCAL changes to the deepwiki capability bundle by installing
+  Amplifier and layering deepwiki via `--app` from a Gitea mirror of the
+  local working tree. Exercises the README install path, the deepwiki-research behavior
+  composition, the local hooks-deepwiki-trigger module mount, the
+  deepwiki-expert agent registration, and the tool-mcp deepwiki server config.
+
+base:
+  image: ubuntu:24.04
+
+# Redirect the published bundle URL to the local Gitea mirror so the DTU
+# installs the local working-tree snapshot, not the GitHub version.
+url_rewrites:
+  auth:
+    username: admin
+    token_var: GITEA_TOKEN
+  # boundary match_mode scopes the rule to this exact repo so sibling repos
+  # sharing the name prefix are not silently captured.
+  default_match_mode: boundary
+  rules:
+    - match: github.com/colombod/amplifier-bundle-deepwiki
+      target: ${GITEA_URL}/admin/amplifier-bundle-deepwiki
+
+# Forward the Anthropic credentials so in-DTU sessions can reach the LLM for
+# the smoke test. Mirrors the host provider config (gateway base_url included).
+passthrough:
+  allow_external: true
+  services:
+    - name: anthropic-key
+      key_env: ANTHROPIC_API_KEY
+    - name: anthropic-base-url
+      key_env: ANTHROPIC_BASE_URL
+
+provision:
+  setup_cmds:
+    # System deps
+    - apt-get update && apt-get install -y git curl
+
+    # Install uv
+    - curl -LsSf https://astral.sh/uv/install.sh | sh
+
+    # Install Amplifier CLI from upstream (public repo, clones directly)
+    - uv tool install git+https://github.com/microsoft/amplifier
+
+    # Configure the Anthropic provider. ${ANTHROPIC_API_KEY} and
+    # ${ANTHROPIC_BASE_URL} are forwarded via passthrough and expanded here.
+    - |
+      mkdir -p /root/.amplifier
+      cat > /root/.amplifier/settings.yaml << EOF
+      config:
+        providers:
+          - module: provider-anthropic
+            source: git+https://github.com/microsoft/amplifier-module-provider-anthropic@main
+            config:
+              api_key: ${ANTHROPIC_API_KEY}
+              base_url: ${ANTHROPIC_BASE_URL}
+              default_model: claude-sonnet-4-6
+              enable_prompt_caching: 'true'
+      EOF
+
+    # THE CHANGE UNDER TEST: layer the deepwiki bundle onto every session via
+    # --app, exactly as the (newly rewritten) README documents. url_rewrites
+    # redirects this GitHub URL to the Gitea mirror of the local working tree.
+    - amplifier bundle add git+https://github.com/colombod/amplifier-bundle-deepwiki@main --app
+
+    # Surface composition results in the provisioning log for evidence.
+    - amplifier --version
+    - amplifier bundle list
+
+# Allow re-testing after pushing a fresh working-tree snapshot to Gitea.
+# Clears the bundle cache so the mirror is re-fetched, then re-adds via --app.
+update:
+  cmds:
+    - amplifier reset --remove cache -y || true
+    - amplifier bundle add git+https://github.com/colombod/amplifier-bundle-deepwiki@main --app
+    - amplifier bundle list
+
+readiness:
+  - name: amplifier-installed
+    command: amplifier --version
+  - name: deepwiki-bundle-registered
+    command: amplifier bundle list

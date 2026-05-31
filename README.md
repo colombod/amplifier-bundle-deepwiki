@@ -35,12 +35,39 @@ and tools work internally, making it easier to use, extend, and integrate with t
 
 ## Installation
 
+DeepWiki is a **capability bundle** — most users want to *add* it on top of their
+existing setup rather than replace their active bundle. Pick the pattern that fits.
+
+### Add DeepWiki to Your Existing Setup (Recommended)
+
+Layer DeepWiki onto every session with the `--app` flag. Your current bundle
+(`foundation`, `dev`, `recipes`, etc.) stays active and DeepWiki capabilities are
+composed on top automatically:
+
 ```bash
-# Add the bundle
+amplifier bundle add git+https://github.com/colombod/amplifier-bundle-deepwiki@main --app
+```
+
+That's it — DeepWiki is now available in every session. No `bundle use` needed.
+
+### Use as Your Primary Bundle
+
+To make DeepWiki your active bundle instead (it includes foundation capabilities):
+
+```bash
+# Add the bundle to your registry
 amplifier bundle add git+https://github.com/colombod/amplifier-bundle-deepwiki@main
 
 # Set as active
 amplifier bundle use deepwiki
+```
+
+Control the scope of `bundle use` with `--local`, `--project`, or `--global`:
+
+```bash
+amplifier bundle use deepwiki --local    # Just you, in this project
+amplifier bundle use deepwiki --project  # Whole team (commit .amplifier/settings.yaml)
+amplifier bundle use deepwiki --global   # All your projects
 ```
 
 ## Usage
@@ -66,14 +93,19 @@ Then ask questions about open-source projects:
 amplifier run "Explain how Express.js middleware works"
 ```
 
-### Compose into Your Bundle
+### Compose into Your Own Bundle (Bundle Authors)
 
-Add DeepWiki capabilities to your existing bundle:
+If you're *building* a bundle and want DeepWiki's behavior baked in as a reusable
+capability, add it to your `bundle.md` (or a behavior YAML) `includes:` list:
 
 ```yaml
 includes:
   - bundle: git+https://github.com/colombod/amplifier-bundle-deepwiki@main#subdirectory=behaviors/deepwiki.yaml
 ```
+
+This pulls in only the DeepWiki behavior (MCP config + trigger hook + expert agent),
+not the full standalone bundle. Use this when authoring a bundle; use `--app` (above)
+when you just want DeepWiki layered onto your own sessions.
 
 ## How It Works
 
@@ -84,7 +116,11 @@ This bundle integrates with the **DeepWiki MCP Server** using the
 
 ![Bundle Architecture](context/architecture.svg)
 
-### MCP Tools Provided
+### MCP Tools (used by the expert agent)
+
+These DeepWiki MCP tools are scoped to the `deepwiki-expert` sub-session — they are **not**
+exposed to your root session. Root sessions delegate to the expert, which calls them
+internally. This keeps the behavior a thin pointer with zero root-level MCP surface.
 
 | Tool | Description |
 |------|-------------|
@@ -118,7 +154,6 @@ amplifier-bundle-deepwiki/
 │   ├── deepwiki-awareness.md           # Thin awareness for delegation
 │   ├── deepwiki-usage.md               # Detailed usage patterns
 │   ├── freshness-check.md              # Pre-flight freshness protocol
-│   ├── proactive-triggers.md           # Automatic trigger patterns
 │   └── staleness-fallbacks.md          # Staleness fallback strategies
 └── docs/
     └── USAGE.md                        # Human documentation
