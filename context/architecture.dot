@@ -1,3 +1,4 @@
+// Regenerate SVG: dot -Tsvg context/architecture.dot -o context/architecture.svg
 digraph architecture {
     rankdir=TB
     fontname="Helvetica"

@@ -5,6 +5,51 @@ All notable changes to the DeepWiki bundle will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-05-31
+
+### Changed — Setup Docs & Delegation Wording
+- **README/USAGE setup instructions** — added the recommended `--app` layering path
+  (`amplifier bundle add … --app`) so users can add DeepWiki on top of their existing
+  bundle without `bundle use`. Both docs now present three clear options: `--app`
+  layering (recommended), primary bundle (with `--local/--project/--global` scopes),
+  and `includes:` composition for bundle authors.
+- **Behavior renamed** `deepwiki-behavior` → `deepwiki-research` — a meaningful name
+  that stays distinct from the root bundle name `deepwiki` (avoids self-referential
+  registry entries flagged by `validate-bundle-repo`). Referenced by file path
+  everywhere, so no external consumers are affected.
+- **Capability-based delegation wording** — replaced the brittle, absolute
+  "DO NOT use web_search" language with "prefer a source-grounded understanding
+  capability," and noted that composed deep-search/web agents are valid routes. This
+  reverses the v1.3.0/v1.4.0 hard prohibition in favor of portable, composition-aware
+  guidance.
+- **Clone-first fallback ladder** — when DeepWiki is stale/unindexed/insufficient, the
+  expert now reads the actual source (shallow `git clone` + inspect) for code-level
+  ground truth *before* web search; web search/fetch is reserved for questions *about*
+  the repo (releases, changelogs, issues, community usage). Updated
+  `context/deepwiki-awareness.md`, `context/staleness-fallbacks.md`, and the agent
+  workflow/tool-scope accordingly.
+- **Removed stale `perplexity_research` references** from agent context (the agent
+  never had that tool); now framed as an optional capability only if composed.
+
+### Added
+- `model_role: research` on the `deepwiki-expert` agent for correct model routing.
+- `AGENTS.md` — in-repo authoring/test/validation guidance.
+- `bundle.dot` / `bundle.png` — repository architecture diagram (via `generate-bundle-docs`).
+- `.amplifier/dtu/` — reusable Digital Twin Universe profile + README for end-to-end testing.
+- Regeneration comment in `context/architecture.dot`.
+
+### Fixed
+- Removed a ghost `context/proactive-triggers.md` reference from the README structure
+  diagram (the file was deleted in v1.4.0).
+- Removed dead `__call__` method from the trigger hook (`mount()` registers
+  `on_provider_request` directly). All 155 hook tests still pass.
+
+### Validation
+- `validate-bundle-repo` (v3.6.0): PASS — 0 errors; context-sink architecture exemplary.
+- End-to-end verified in a Digital Twin Universe: bundle loads from local source,
+  `--app` layering works without `bundle use`, hook mounts, expert agent registers,
+  and the DeepWiki MCP server exposes its 3 tools.
+
 ## [1.4.0] - 2026-02-15
 
 ### Changed — Context Consolidation (46% token reduction)

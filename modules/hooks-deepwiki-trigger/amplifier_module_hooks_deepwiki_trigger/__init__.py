@@ -519,10 +519,6 @@ class DeepWikiTriggerHook:
             self._state.popitem(last=False)
         return state
 
-    async def __call__(self, event: str, data: dict[str, Any]) -> HookResult:
-        """HookHandler protocol entry point."""
-        return await self.on_provider_request(event, data)
-
     async def on_provider_request(
         self, _event: str, data: dict[str, Any]
     ) -> HookResult:

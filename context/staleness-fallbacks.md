@@ -4,29 +4,48 @@
 
 ---
 
-## Fallback Strategy Matrix
+## Escalation Ladder
 
-| Scenario | DeepWiki | web_fetch | web_search | perplexity_research |
-|----------|----------|-----------|------------|---------------------|
-| **Architecture/Design** | ✅ Primary | ❌ Not needed | ❌ Not needed | 🟡 If DeepWiki outdated |
-| **Current API docs** | 🟡 Start here | ✅ Primary | 🟡 Supplement | ❌ Overkill |
-| **Breaking changes** | ❌ Likely missing | 🟡 Changelogs | ✅ Primary | ✅ If complex |
-| **Latest features** | ❌ Likely missing | ✅ Primary | ✅ Primary | 🟡 If obscure |
-| **Migration guides** | ❌ Won't have | 🟡 Official docs | ✅ Primary | ✅ For complex |
-| **Version-specific bugs** | ❌ Won't have | 🟡 Release notes | ✅ Primary | ✅ For research |
-| **UNREACHABLE (DeepWiki down)** | ❌ Unavailable | ✅ Primary | ✅ Primary | 🟡 If complex |
+> **Tool scope:** This agent has `tool-mcp` (DeepWiki), `tool-web` (`web_fetch` + `web_search`), and `tool-bash`.
+
+When DeepWiki is stale, unindexed, or insufficient, escalate in this order — **read code from the source before reading about it from the web:**
+
+1. **DeepWiki** (`tool-mcp`) — source-grounded, indexed analysis. Primary for architecture, design, and "how does it work" questions.
+2. **Clone & inspect locally** (`tool-bash`) — for code-level ground truth, shallow-clone into a temp dir and read the actual source:
+   ```bash
+   tmp=$(mktemp -d) && git clone --depth 1 https://github.com/<owner>/<repo>.git "$tmp"
+   # then inspect with shell tools: find "$tmp" -name '*.py', grep -rn "<symbol>" "$tmp", cat "$tmp/<file>"
+   ```
+   This beats web search for imports, signatures, and implementation detail — it *is* the truth, at the cloned ref. Clean up the temp dir when done.
+3. **Web search / fetch** (`tool-web`) — reserve for questions *about* the repo that aren't answerable from its source tree: releases, changelogs, migration guides, open issues, security advisories, and community usage. Use `web_search` to discover and `web_fetch` to read authoritative pages.
+
+(If the calling environment also provides a deep-research capability such as `perplexity_research`, it can substitute for `web_search` on complex multi-source questions — but never assume it is available.)
+
+### Strategy Matrix
+
+| Scenario | DeepWiki | Clone & inspect | web_fetch / web_search |
+|----------|----------|-----------------|------------------------|
+| **Architecture/Design** | ✅ Primary | 🟡 If DeepWiki outdated | ❌ Not needed |
+| **Imports / signatures / impl detail** | 🟡 Start here | ✅ Primary (ground truth) | ❌ Shallow |
+| **Current API for a specific version** | 🟡 Start here | ✅ Clone at the tag | 🟡 Official docs |
+| **Breaking changes** | ❌ Likely missing | 🟡 Diff tags/changelog file | ✅ Releases/changelog page |
+| **Latest features** | ❌ Likely missing | 🟡 Clone `main` | ✅ Release notes |
+| **Migration guides** | ❌ Won't have | 🟡 Repo docs/ dir | ✅ Official guide |
+| **Open issues / community usage** | ❌ Won't have | ❌ Not in source | ✅ Primary |
+| **UNREACHABLE (DeepWiki down)** | ❌ Unavailable | ✅ Primary | ✅ For meta-questions |
 
 ---
 
 ## Recommended Patterns
 
-### Pattern 1: Architecture + Current API (Most Common)
+### Pattern 1: Architecture + Real Source (Most Common)
 ```
 1. DeepWiki ──▶ Understand architecture, design patterns, concepts
-2. web_fetch ──▶ Get current API reference from official docs
-3. Implement ──▶ Using DeepWiki's design + current API reality
+2. git clone --depth 1 ──▶ Read the actual API surface / signatures from source
+3. web_fetch ──▶ Only if you need official prose docs the source doesn't carry
+4. Implement ──▶ Using DeepWiki's design + the real, current source
 ```
-**Use when:** Implementing with established library, need both concepts and current API
+**Use when:** Implementing with an established library; need both concepts and exact, current API. Prefer reading the cloned source over web snippets for signatures.
 
 ### Pattern 2: Deep Research + Validation
 ```
@@ -49,21 +68,21 @@
 ```
 1. DeepWiki ──▶ Gives outdated information
 2. RECOGNIZE mismatch ──▶ Import/method errors
-3. perplexity_research ──▶ "How does [feature] work in [library] v[X.Y.Z]?"
-4. web_fetch ──▶ Official docs for current version
-5. Implement ──▶ With corrected information
+3. git clone --depth 1 --branch v[X.Y.Z] ──▶ Read the real signatures at that exact tag
+4. web_fetch ──▶ Official docs only if source lacks prose explanation
+5. Implement ──▶ With corrected, source-verified information
 ```
-**Use when:** DeepWiki information doesn't match reality
+**Use when:** DeepWiki information doesn't match reality. The cloned tag is the source of truth for the version's actual API.
 
 ### Pattern 5: DeepWiki Unreachable
 ```
 1. GitHub check ──▶ Confirmed repo exists (200)
 2. DeepWiki ──▶ Connection failed (retry once, still failed)
-3. web_fetch ──▶ Repo README, official docs
-4. web_search ──▶ '{repo} documentation', '{repo} architecture'
+3. git clone --depth 1 ──▶ Read README + actual source for architecture/API ground truth
+4. web_fetch / web_search ──▶ Fill gaps the source can't answer (releases, community usage)
 5. Report ──▶ With Freshness Assessment showing UNREACHABLE
 ```
-**Use when:** DeepWiki MCP server is down or unreachable after one retry
+**Use when:** DeepWiki MCP server is down or unreachable after one retry. Cloning the source is the strongest substitute for DeepWiki's analysis.
 
 ---
 
