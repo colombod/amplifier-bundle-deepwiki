@@ -62,9 +62,11 @@ open-source projects. It's automatically available for delegation.
 - "How can I extend [framework]?"
 - "What's the best way to integrate with [library]?"
 
-### MCP Tools
+### MCP Tools (scoped to the expert agent)
 
-Three DeepWiki tools are available:
+The DeepWiki MCP server is configured **inside the `deepwiki-expert` sub-session**, not the
+root session. You delegate to the expert and it calls these tools internally — they are not
+exposed for direct use in your root session:
 
 | Tool | Description |
 |------|-------------|

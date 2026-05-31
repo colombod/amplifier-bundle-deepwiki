@@ -35,4 +35,4 @@ Use `deepwiki:deepwiki-expert` rather than MCP tools directly. The expert has fr
 ## Quick Reference
 
 - Repo format: `owner/repo` (e.g., `facebook/react`) — public repos only
-- Tools: `mcp_deepwiki_ask_question` (fast), `read_wiki_structure`, `read_wiki_contents`
+- The DeepWiki MCP tools (`mcp_deepwiki_ask_question`, `read_wiki_structure`, `read_wiki_contents`) live **inside the `deepwiki-expert` sub-session**, not the root session. Delegate to the expert — don't try to call them directly here.

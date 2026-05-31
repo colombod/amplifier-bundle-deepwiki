@@ -1,86 +1,85 @@
-// This repository (deepwiki) gives Amplifier the ability to research and understand
-// any GitHub project using DeepWiki's AI-powered knowledge base. Ask a question about
-// an open-source library, and it fetches accurate, source-grounded answers.
-
+// This repository packages "deepwiki": a ready-to-use add-on that lets an AI assistant
+// research and explain any GitHub project by tapping DeepWiki's AI knowledge base.
+// It bundles the research skill, an expert helper, an auto-trigger, and a guidance note.
 digraph deepwiki {
     rankdir=LR
     fontname="Helvetica"
     fontsize=12
-    label="DeepWiki Research Bundle\nUnderstand any GitHub project through AI-powered answers — deepwiki v1.5.0"
+    label="DeepWiki Research Bundle\nGives an AI assistant the ability to understand GitHub projects — v1.5.0"
     labelloc=t
     labeljust=c
     nodesep=0.6
     ranksep=0.7
     bgcolor="white"
-    source_hash="176fd7f3e8ebd4dfa3189bb5f647edfe0f0c075c7b26ffdec4a8e677154024d4"
+    source_hash="03e85f9031bf5ffa8e8b93b572141237ce111eda6e669d8d87f355dbb4454cbf"
 
     node [fontname="Helvetica", fontsize=11, style="filled,rounded"]
     edge [fontname="Helvetica", fontsize=9]
 
-    root_deepwiki [label="DeepWiki Research (this bundle)\nv1.5.0 · 0 tools · 0 agents\n~116 tok aggregate", shape=box, fillcolor="#80cbc4", style="filled,rounded,bold", penwidth=2]
+    root_deepwiki [label="DeepWiki Bundle (the whole package)\nv1.5.0\n0 tools · 0 agents\n~116 tok aggregate", shape=box, fillcolor="#80cbc4", style="filled,rounded,bold", penwidth=2]
 
     subgraph cluster_behaviors {
-        label="Capabilities — what this bundle can do"
+        label="Behaviors — skills the assistant gains"
         style="filled"
         fillcolor="#f9f9f9"
         color="#999999"
 
-        beh_deepwiki_research [label="Research a GitHub Project\n2 tools · 1 ctx\n~1782 tok", shape=box, fillcolor="#e0f2f1", style="filled,rounded"]
+        beh_deepwiki_research [label="Research a GitHub Project\n1 tools · 1 ctx\n~1838 tok", shape=box, fillcolor="#e0f2f1", style="filled,rounded"]
     }
 
     subgraph cluster_agents {
-        label="Specialists — helpers it can call on"
+        label="Agents — specialist helpers"
         style="filled"
         fillcolor="#f9f9f9"
         color="#999999"
 
-        agt_deepwiki_expert [label="DeepWiki Expert\nAnswers questions about open-source code\n~1066 tok desc", shape=box, fillcolor="#c8e6c9", style="filled,rounded"]
+        agt_deepwiki_expert [label="DeepWiki Expert (answers repo questions)\n~1066 tok desc", shape=box, fillcolor="#c8e6c9", style="filled,rounded"]
     }
 
     subgraph cluster_modules {
-        label="Behind-the-Scenes Tools"
+        label="Modules — automatic behind-the-scenes parts"
         style="filled"
         fillcolor="#f9f9f9"
         color="#999999"
 
-        mod_hooks_deepwiki_trigger [label="Auto-Suggest DeepWiki\nNudges toward research when a repo is mentioned", shape=box, fillcolor="#bbdefb", style="filled,rounded"]
+        mod_hooks_deepwiki_trigger [label="Auto-Trigger (notices when DeepWiki can help)", shape=box, fillcolor="#bbdefb", style="filled,rounded"]
     }
 
     subgraph cluster_context {
-        label="Background Knowledge — reference notes"
+        label="Context Files — background notes for the assistant"
         style="filled"
         fillcolor="#f9f9f9"
         color="#999999"
 
-        ctx_deepwiki_awareness_md [label="When to use DeepWiki\ndeepwiki-awareness.md\n~486 tok", shape=box, fillcolor="#e1bee7", style="filled,rounded"]
+        ctx_deepwiki_awareness_md [label="When to use DeepWiki (guidance note)\ndeepwiki-awareness.md\n~523 tok", shape=box, fillcolor="#e1bee7", style="filled,rounded"]
     }
 
     subgraph cluster_legend {
-        label="Legend — how to read this diagram"
+        label="Legend — what each color means"
         style="filled"
         fillcolor="white"
         color="#cccccc"
         fontsize=9
 
-        leg_root [label="this bundle", shape=box, fillcolor="#80cbc4", style="filled,rounded,bold", fontsize=9]
-        leg_behavior [label="capability", shape=box, fillcolor="#e0f2f1", style="filled,rounded", fontsize=9]
-        leg_agent [label="specialist", shape=box, fillcolor="#c8e6c9", style="filled,rounded", fontsize=9]
-        leg_module [label="behind-the-scenes tool", shape=box, fillcolor="#bbdefb", style="filled,rounded", fontsize=9]
-        leg_provider [label="service", shape=box, fillcolor="#e0e0e0", style="filled,rounded", fontsize=9]
-        leg_context [label="background knowledge", shape=box, fillcolor="#e1bee7", style="filled,rounded", fontsize=9]
-        leg_standalone [label="standalone", shape=box, fillcolor="#80cbc4", style="filled,rounded", fontsize=9]
+        leg_root [label="the whole bundle", shape=box, fillcolor="#80cbc4", style="filled,rounded,bold", fontsize=9]
+        leg_behavior [label="behavior (a skill)", shape=box, fillcolor="#e0f2f1", style="filled,rounded", fontsize=9]
+        leg_agent [label="agent (a helper)", shape=box, fillcolor="#c8e6c9", style="filled,rounded", fontsize=9]
+        leg_module [label="module (automatic part)", shape=box, fillcolor="#bbdefb", style="filled,rounded", fontsize=9]
+        leg_provider [label="provider (service)", shape=box, fillcolor="#e0e0e0", style="filled,rounded", fontsize=9]
+        leg_context [label="context (background note)", shape=box, fillcolor="#e1bee7", style="filled,rounded", fontsize=9]
+        leg_standalone [label="standalone piece", shape=box, fillcolor="#80cbc4", style="filled,rounded", fontsize=9]
         leg_experiment [label="experiment", shape=box, fillcolor="#e1bee7", style="filled,rounded", fontsize=9]
-        leg_ext_cost [label="outside source (adds cost)", shape=box, fillcolor="#80cbc4", style="dashed", color="red", penwidth=2, fontsize=9]
-        leg_ext_muted [label="outside source (no cost)", shape=box, fillcolor="#f5f5f5", style="dashed", fontsize=9]
+        leg_ext_cost [label="outside source, adds cost", shape=box, fillcolor="#80cbc4", style="dashed", color="red", penwidth=2, fontsize=9]
+        leg_ext_muted [label="outside source, no cost", shape=box, fillcolor="#f5f5f5", style="dashed", fontsize=9]
     }
 
-    disclaimer [label="Token estimates: ~4 chars/token\nSolid border = local (counted)\nDashed + red = external, hidden cost (not counted)\nDashed + muted = external, no cost\nExcludes: sub-session costs, runtime-dynamic", shape=note, fillcolor="#eceff1", style="filled", fontsize=9]
+    disclaimer [label="How to read the numbers:\n'tok' = rough text size (~4 characters each)\nSolid border = included here (counted)\nDashed + red = pulled in from elsewhere, hidden cost (not counted)\nDashed + gray = pulled in from elsewhere, no cost\nNot shown: helper sessions, anything decided while running", shape=note, fillcolor="#eceff1", style="filled", fontsize=9]
 
-    ext_githttps___github_com_microsoft_amplifier_foundation_main [label="Amplifier Foundation\nShared building blocks (external, adds cost)", shape=box, fillcolor="#80cbc4", style="dashed", color="red", penwidth=2]
+    ext_githttps___github_com_microsoft_amplifier_foundation_main [label="Amplifier Foundation\n(shared toolkit from elsewhere, adds cost)", shape=box, fillcolor="#80cbc4", style="dashed", color="red", penwidth=2]
 
     root_deepwiki -> ext_githttps___github_com_microsoft_amplifier_foundation_main [style=dashed]
-    root_deepwiki -> beh_deepwiki_research [label="provides"]
-    beh_deepwiki_research -> agt_deepwiki_expert [label="relies on"]
+    root_deepwiki -> beh_deepwiki_research [label="includes"]
+    beh_deepwiki_research -> agt_deepwiki_expert [label="owns"]
     beh_deepwiki_research -> mod_hooks_deepwiki_trigger [label="uses", penwidth=0.8]
     beh_deepwiki_research -> ctx_deepwiki_awareness_md [style=dotted, color=purple]
 }

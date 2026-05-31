@@ -3,15 +3,10 @@ bundle:
   version: 1.5.0
   description: DeepWiki MCP integration for understanding open-source projects
 
-# MCP Server Configuration via tool-mcp module
-tools:
-  - module: tool-mcp
-    source: git+https://github.com/microsoft/amplifier-module-tool-mcp@main
-    config:
-      servers:
-        deepwiki:
-          type: streamable-http
-          url: https://mcp.deepwiki.com/mcp
+# NOTE: The DeepWiki MCP server is intentionally NOT exposed to the root session.
+# The raw mcp_deepwiki_* tools belong only to the deepwiki-expert sub-session (configured
+# in agents/deepwiki-expert.md). Root sessions delegate to that agent rather than calling
+# MCP directly — keeping this behavior a thin pointer with zero root-level MCP surface.
 
 # Pattern-detection hook: injects deepwiki reminders when GitHub URLs
 # or library questions appear in conversation

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.5.0] - 2026-05-31
 
+### Changed — MCP Tool Placement (context-sink purity)
+- **DeepWiki MCP server consolidated to the expert agent only.** Removed the `tool-mcp`
+  block from `behaviors/deepwiki.yaml` so the raw `mcp_deepwiki_*` tools are no longer
+  exposed to root sessions. The server remains configured in `agents/deepwiki-expert.md`,
+  where it belongs — root sessions delegate to the expert rather than calling MCP directly.
+  This removes the previous dual-config drift risk and makes the behavior a pure thin
+  pointer (hook + agent + thin awareness, zero root-level tool surface). Root-facing docs
+  (`README.md`, `docs/USAGE.md`, `context/deepwiki-awareness.md`) updated to state the MCP
+  tools are scoped to the agent sub-session.
+
 ### Changed — Setup Docs & Delegation Wording
 - **README/USAGE setup instructions** — added the recommended `--app` layering path
   (`amplifier bundle add … --app`) so users can add DeepWiki on top of their existing

@@ -116,7 +116,11 @@ This bundle integrates with the **DeepWiki MCP Server** using the
 
 ![Bundle Architecture](context/architecture.svg)
 
-### MCP Tools Provided
+### MCP Tools (used by the expert agent)
+
+These DeepWiki MCP tools are scoped to the `deepwiki-expert` sub-session — they are **not**
+exposed to your root session. Root sessions delegate to the expert, which calls them
+internally. This keeps the behavior a thin pointer with zero root-level MCP surface.
 
 | Tool | Description |
 |------|-------------|
